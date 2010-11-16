@@ -1,0 +1,129 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  #include "queue.h"
+    2:  
+    3:  void * QGet(queue * q) {
+*** EVALUATION ***
+
+Function: QGet
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\queue.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\queue.c.o"
+
+  0000 6cac         [2]     STD   4,-SP
+    4:  	void * pt;
+    5:  	
+    6:  	if (q->size <= 0) {
+  0002 b745         [1]     TFR   D,X
+  0004 ee06         [3]     LDX   6,X
+  0006 2e0b         [3/1]   BGT   *+13 ;abs = 0013
+    7:  		q->statistics.failedReadsEmpty++;
+  0008 b745         [1]     TFR   D,X
+  000a ed0e         [3]     LDY   14,X
+  000c 02           [1]     INY   
+  000d 6d0e         [2]     STY   14,X
+    8:  		return 0;
+  000f c7           [1]     CLRB  
+  0010 87           [1]     CLRA  
+  0011 2026         [3]     BRA   *+40 ;abs = 0039
+    9:  	} else {
+   10:  		pt = q->q[q->head];
+  0013 b745         [1]     TFR   D,X
+  0015 ec02         [3]     LDD   2,X
+  0017 59           [1]     LSLD  
+  0018 e300         [3]     ADDD  0,X
+  001a b746         [1]     TFR   D,Y
+  001c ec40         [3]     LDD   0,Y
+  001e 6c82         [2]     STD   2,SP
+   11:  		if (q->head++ > q->maxSize) {
+  0020 ed02         [3]     LDY   2,X
+  0022 1a41         [2]     LEAX  1,Y
+  0024 b754         [1]     TFR   X,D
+  0026 ee80         [3]     LDX   0,SP
+  0028 6c02         [2]     STD   2,X
+  002a ad08         [3]     CPY   8,X
+  002c 2f04         [3/1]   BLE   *+6 ;abs = 0032
+   12:  			q->head = 0;
+  002e c7           [1]     CLRB  
+  002f 87           [1]     CLRA  
+  0030 6c02         [2]     STD   2,X
+   13:  		}
+   14:  		q->size--;
+  0032 ed06         [3]     LDY   6,X
+  0034 03           [1]     DEY   
+  0035 6d06         [2]     STY   6,X
+   15:  		return pt;
+  0037 ec82         [3]     LDD   2,SP
+   16:  	}
+   17:  	
+   18:  }
+  0039 1b84         [2]     LEAS  4,SP
+  003b 3d           [5]     RTS   
+   19:  
+   20:  int QPut(queue * q, void * pt) {
+*** EVALUATION ***
+
+Function: QPut
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\queue.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\queue.c.o"
+
+  0000 3b           [2]     PSHD  
+   21:  
+   22:  	if (q->size >= q->maxSize) {
+  0001 ee84         [3]     LDX   4,SP
+  0003 ec06         [3]     LDD   6,X
+  0005 ac08         [3]     CPD   8,X
+  0007 2d0a         [3/1]   BLT   *+12 ;abs = 0013
+   23:  		q->statistics.failedPutsFull++;
+  0009 ed0c         [3]     LDY   12,X
+  000b 02           [1]     INY   
+  000c 6d0c         [2]     STY   12,X
+   24:  		return -1;
+  000e ccffff       [2]     LDD   #65535
+  0011 2035         [3]     BRA   *+55 ;abs = 0048
+   25:  	} else {
+   26:  		q->q[q->tail] = pt;
+  0013 ec04         [3]     LDD   4,X
+  0015 59           [1]     LSLD  
+  0016 e300         [3]     ADDD  0,X
+  0018 ee80         [3]     LDX   0,SP
+  001a b746         [1]     TFR   D,Y
+  001c 6e40         [2]     STX   0,Y
+   27:  		if (q->tail++ > q->maxSize) {
+  001e ee84         [3]     LDX   4,SP
+  0020 ed04         [3]     LDY   4,X
+  0022 1a41         [2]     LEAX  1,Y
+  0024 b754         [1]     TFR   X,D
+  0026 ee84         [3]     LDX   4,SP
+  0028 6c04         [2]     STD   4,X
+  002a ad08         [3]     CPY   8,X
+  002c 2f04         [3/1]   BLE   *+6 ;abs = 0032
+   28:  			q->tail = 0;
+  002e c7           [1]     CLRB  
+  002f 87           [1]     CLRA  
+  0030 6c04         [2]     STD   4,X
+   29:  		}
+   30:  		q->size++;
+  0032 ed06         [3]     LDY   6,X
+  0034 02           [1]     INY   
+  0035 6d06         [2]     STY   6,X
+   31:  		if (q->size > q->statistics.largestSize) {
+  0037 ad0a         [3]     CPY   10,X
+  0039 2f04         [3/1]   BLE   *+6 ;abs = 003f
+   32:  			q->statistics.largestSize = q->size;
+  003b ec06         [3]     LDD   6,X
+  003d 6c0a         [2]     STD   10,X
+   33:  		}
+   34:  		q->statistics.total++;
+  003f ede012       [3]     LDY   18,X
+  0042 02           [1]     INY   
+  0043 6de012       [3]     STY   18,X
+   35:  		return q->size;
+  0046 ec06         [3]     LDD   6,X
+   36:  	}
+   37:  
+   38:  }
+  0048 30           [3]     PULX  
+  0049 3d           [5]     RTS   
+   39:  
+   40:  

@@ -1,0 +1,225 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // filename ******** PWM.C ************** 
+    2:  // Implementation of Pulse Width Modulated outputs 
+    3:  // two 8-bit Pulse Width Modulated outputs 
+    4:  // Technological Arts 9S12DP512 board  
+    5:  // PP3 PP1 are PWM output, 93.75Hz wave
+    6:  // PWMDTY3, PWMDTY1 vary from 0 to 250 
+    7:  
+    8:  //        ___________  250-PWMDTY3     ___________
+    9:  // PP3 __/  PWMDTY3	 \________________/ 	PWMDTY3	\___
+   10:  
+   11:  //        ___________  250-PWMDTY1     ___________
+   12:  // PP1 __/  PWMDTY1	 \________________/ 	PWMDTY1	\___
+   13:  
+   14:  // Jonathan W. Valvano 9/1/09
+   15:  
+   16:  //  This example accompanies the books
+   17:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+   18:  //        Thompson, copyright (c) 2006,
+   19:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+   20:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   21:  
+   22:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   23:  // You may use, edit, run or distribute this file 
+   24:  //    as long as the above copyright notices remain
+   25:  
+   26:  
+   27:  #include <hidef.h>         /* common defines and macros */
+   28:  #include <mc9s12dp512.h>     /* derivative information */
+   29:  
+   30:  // ---------PWM_Init---------
+   31:  // enable 8-bit PWM channels 3,1
+   32:  // Port P PP3 and PP1 are output, 93.75Hz wave
+   33:  // inputs: none
+   34:  // outputs: none
+   35:  void PWM_Init(void){
+*** EVALUATION ***
+
+Function: PWM_Init
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\PWM.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PWM.c.o" -WmsgSd1106
+
+   36:    DDRP |= 0x0F;      
+  0000 1c00000f     [4]     BSET  _DDRP,#15
+   37:    PWMPOL = 0x0F;   //PWM channels high then low
+  0004 cc770f       [2]     LDD   #30479
+  0007 5b00         [2]     STAB  _PWMPOL
+   38:    // bits 7-0, PPOL7-0, Pulse Width Channel 7-0 Polarity
+   39:    //  1 = high at beginning of period, then low when duty count reached.
+   40:    //  0 = low at beginning of period, then high when duty count reached.
+   41:    PWMCLK = 0x0F;   // clock SB for 3, clock SA for 1, 
+  0009 5b00         [2]     STAB  _PWMCLK
+   42:    // bit 7, PCLK7, Pulse Width Channel 7 Clock Select
+   43:    //   1 = Clock SB is the clock source for PWM channel 7
+   44:    //   0 = Clock B is the clock source for PWM channel 7
+   45:    // bit 6, PCLK6, Pulse Width Channel 6 Clock Select
+   46:    //   1 = Clock SB is the clock source for PWM channel 6
+   47:    //   0 = Clock B is the clock source for PWM channel 6
+   48:    // bit 5, PCLK5, Pulse Width Channel 5 Clock Select
+   49:    //   1 = Clock SB is the clock source for PWM channel 5
+   50:    //   0 = Clock B is the clock source for PWM channel 5
+   51:    // bit 4, PCLK4, Pulse Width Channel 4 Clock Select
+   52:    //   1 = Clock SA is the clock source for PWM channel 4
+   53:    //   0 = Clock A is the clock source for PWM channel 4
+   54:    // bit 3, PCLK3, Pulse Width Channel 3 Clock Select
+   55:    //   1 = Clock SB is the clock source for PWM channel 3  
+   56:    //   0 = Clock B is the clock source for PWM channel 3
+   57:    // bit 2, PCLK2, Pulse Width Channel 2 Clock Select
+   58:    //   1 = Clock SB is the clock source for PWM channel 2
+   59:    //   0 = Clock B is the clock source for PWM channel 2
+   60:    // bit 1, PCLK1, Pulse Width Channel 1 Clock Select
+   61:    //   1 = Clock SA is the clock source for PWM channel 1
+   62:    //   0 = Clock A is the clock source for PWM channel 1
+   63:    // bit 0, PCLK0, Pulse Width Channel 0 Clock Select
+   64:    //   1 = Clock SA is the clock source for PWM channel 0
+   65:    //   0 = Clock A is the clock source for PWM channel 0
+   66:    PWMPRCLK = 0x77; // B is bus clock/128, A is 24MHz/128 = 187.5 kHz
+  000b 5a00         [2]     STAA  _PWMPRCLK
+   67:    // bits 6-4, PCKB2-PCKB0, n is 0 to 7, Prescaler Select for Clock B
+   68:    //           clock B is bus clock/(2**n)
+   69:    // bits 2-0, PCKA2-PCKA0, m is 0 to 7, Prescaler Select for Clock A
+   70:    //           clock A is bus clock/(2**m)
+   71:    PWMCAE = 0;      // left aligned mode
+  000d 790000       [3]     CLR   _PWMCAE
+   72:    // bits 7-0, CAE7-0, Center Aligned Output Mode on Channel 7-0
+   73:    //   1 = operates in Center Aligned Output Mode.
+   74:    //   0 = operates in Left Aligned Output Mode.
+   75:    PWMCTL = 0x00;   // Concatenate no channels, runs in wait/freeze mode 
+  0010 790000       [3]     CLR   _PWMCTL
+   76:    // bit 7, CON67, Concatenate channels 6 and 7
+   77:    //   1 = Channels 6 and 5 are concatenated to create one 16-bit channel 
+   78:    //       Channel 6 becomes high byte and channel 7 becomes low byte 
+   79:    //       Channel 7 output pin is used as output for 16-bit PWM
+   80:    //       Channel 7 clock select control-bit determines clock source 
+   81:    //       Channel 7 polarity bit determines polarity
+   82:    //       Channel 7 enable	bit enables  output and 
+   83:    //       Channel 7 center aligned enable bit determines output mode.
+   84:    //   0 = Channels 4 and 5 are separate 8-bit PWMs.
+   85:    // bit 6, CON45, Concatenate channels 4 and 5
+   86:    //   1 = Channels 4 and 5 are concatenated to create one 16-bit channel 
+   87:    //       Channel 4 becomes high byte and channel 5 becomes low byte 
+   88:    //       Channel 5 output pin is used as output for 16-bit PWM
+   89:    //       Channel 5 clock select control-bit determines clock source 
+   90:    //       Channel 5 polarity bit determines polarity
+   91:    //       Channel 5 enable	bit enables  output and 
+   92:    //       Channel 5 center aligned enable bit determines output mode.
+   93:    //   0 = Channels 4 and 5 are separate 8-bit PWMs.
+   94:    // bit 5, CON23, Concatenate channels 2 and 3
+   95:    //   1 = Channels 2 and 3 are concatenated to create one 16-bit channel 
+   96:    //       Channel 2 becomes high byte and channel 3 becomes low byte 
+   97:    //       Channel 3 output pin is used as output for 16-bit PWM
+   98:    //       Channel 3 clock select control-bit determines clock source 
+   99:    //       Channel 3 polarity bit determines polarity 
+  100:    //       Channel 3 enable	bit enables  output and 
+  101:    //       Channel 3 center aligned enable bit determines output mode
+  102:    //   0 = Channels 2 and 3 are separate 8-bit PWMs.
+  103:    // bit 4, CON01, Concatenate channels 0 and 1
+  104:    //   1 = Channels 0 and 1 are concatenated to create one 16-bit channel 
+  105:    //       Channel 0 becomes high byte and channel 1 becomes low byte 
+  106:    //       Channel 1 output pin is used as output for 16-bit PWM
+  107:    //       Channel 1 clock select control-bit determines clock source 
+  108:    //       Channel 1 polarity bit determines polarity 
+  109:    //       Channel 1 enable	bit enables  output and 
+  110:    //       Channel 1 center aligned enable bit determines output mode
+  111:    //   0 = Channels 0 and 1 are separate 8-bit PWMs.
+  112:    // bit 3, PSWAI, PWM Stops in Wait Mode
+  113:    // bit 2, PFRZ, PWM Counters Stop in Freeze Mode
+  114:    PWMSCLA = 4;     // SA prescaled A by 4  = 24MHz/128/8 = 23437.5Hz
+  0013 c604         [1]     LDAB  #4
+  0015 5b00         [2]     STAB  _PWMSCLA
+  115:    // Clock SA = Clock A / (2 * PWMSCLA)
+  116:    PWMSCLB = 4;     // SB prescaled B by 4	 = 24MHz/128/8 = 23437.5Hz
+  0017 5b00         [2]     STAB  _PWMSCLB
+  117:    // Clock SB = Clock B / (2 * PWMSCLB)
+  118:    PWMPER3 = 250;   // period3, 23437.5Hz/250=93.75Hz wave
+  0019 c6fa         [1]     LDAB  #250
+  001b 5b00         [2]     STAB  _PWMPER23:1
+  119:    PWMPER2 = 250;   // period2, 23437.5Hz/250=93.75Hz wave
+  001d 5b00         [2]     STAB  _PWMPER23
+  120:    PWMPER1 = 250;   // period1, 23437.5Hz/250=93.75Hz wave
+  001f 5b00         [2]     STAB  _PWMPER01:1
+  121:    PWMPER0 = 250;   // period0, 23437.5Hz/250=93.75Hz wave
+  0021 5b00         [2]     STAB  _PWMPER01
+  122:    PWMDTY3 = 0;     // duty cycle3, off
+  0023 790000       [3]     CLR   _PWMDTY23:1
+  123:    PWMDTY2 = 0;     // duty cycle1, off
+  0026 790000       [3]     CLR   _PWMDTY23
+  124:    PWMDTY1 = 0;     // duty cycle3, off
+  0029 790000       [3]     CLR   _PWMDTY01:1
+  125:    PWMDTY0 = 0;     // duty cycle1, off
+  002c 790000       [3]     CLR   _PWMDTY01
+  126:    PWME = 0x0F;	   // enable channels 3~1
+  002f c60f         [1]     LDAB  #15
+  0031 5b00         [2]     STAB  _PWME
+  127:    // bits 7-0, PWME7-0, Pulse Width Channel 7-0 Enable
+  128:  }
+  0033 3d           [5]     RTS   
+  129:  
+  130:  // ---------PWM_Duty3---------
+  131:  // set duty cycle, power to PP3
+  132:  // inputs: power from 0 to 250
+  133:  // outputs: none
+  134:  void PWM_Duty3(unsigned char power){
+*** EVALUATION ***
+
+Function: PWM_Duty3
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\PWM.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PWM.c.o" -WmsgSd1106
+
+  135:      PWMDTY3 = power;      // PP3 goes 1 for power/250 
+  0000 5b00         [2]     STAB  _PWMDTY23:1
+  136:  }
+  0002 3d           [5]     RTS   
+  137:  
+  138:  // ---------PWM_Duty2---------
+  139:  // set duty cycle, power to PP1
+  140:  // inputs: power from 0 to 250
+  141:  // outputs: none
+  142:  void PWM_Duty2(unsigned char power){
+*** EVALUATION ***
+
+Function: PWM_Duty2
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\PWM.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PWM.c.o" -WmsgSd1106
+
+  143:      PWMDTY2 = power;      // PP1 goes 1 for power/250 
+  0000 5b00         [2]     STAB  _PWMDTY23
+  144:  }
+  0002 3d           [5]     RTS   
+  145:     
+  146:  
+  147:  // ---------PWM_Duty1---------
+  148:  // set duty cycle, power to PP3
+  149:  // inputs: power from 0 to 250
+  150:  // outputs: none
+  151:  void PWM_Duty1(unsigned char power){
+*** EVALUATION ***
+
+Function: PWM_Duty1
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\PWM.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PWM.c.o" -WmsgSd1106
+
+  152:      PWMDTY1 = power;      // PP3 goes 1 for power/250 
+  0000 5b00         [2]     STAB  _PWMDTY01:1
+  153:  }
+  0002 3d           [5]     RTS   
+  154:  
+  155:  // ---------PWM_Duty0---------
+  156:  // set duty cycle, power to PP1
+  157:  // inputs: power from 0 to 250
+  158:  // outputs: none
+  159:  void PWM_Duty0(unsigned char power){
+*** EVALUATION ***
+
+Function: PWM_Duty0
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\PWM.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PWM.c.o" -WmsgSd1106
+
+  160:      PWMDTY0 = power;      // PP1 goes 1 for power/250 
+  0000 5b00         [2]     STAB  _PWMDTY01
+  161:  }
+  0002 3d           [5]     RTS   
+  162:       

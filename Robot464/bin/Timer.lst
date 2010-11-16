@@ -1,0 +1,241 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // File **********Timer.C***********
+    2:  // Timer wait routines, 9S12DP512
+    3:  // assumes PLL is active and E clock is 24 MHz
+    4:  // TCNT will become 1.5MHz
+    5:  // Jonathan W. Valvano 7/14/07
+    6:  
+    7:  //  This example accompanies the books
+    8:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    9:  //         Thomson Engineering, copyright (c) 2006,
+   10:  //   "Introduction to Embedded Microcomputer Systems: 
+   11:  //    Motorola 6811 and 6812 Simulation", Thomson, copyright (c) 2002
+   12:  
+   13:  // Copyright 2007 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   14:  //    You may use, edit, run or distribute this file 
+   15:  //    as long as the above copyright notice remains 
+   16:  
+   17:  #include <mc9s12dp512.h>     /* derivative information */
+   18:  #include "lcd.h"
+   19:   
+   20:  
+   21:  //---------------------Timer_Init---------------------
+   22:  // activate TCNT at 1.5 MHz
+   23:  // inputs: none
+   24:  // outputs: none
+   25:  void Timer_Init(void){
+*** EVALUATION ***
+
+Function: Timer_Init
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+   26:    asm sei      // make ritual atomic 
+  0000 1410         [1]     SEI   
+   27:    TSCR1 = 0x80;   // Enable TCNT, 24MHz E clock
+  0002 cc0480       [2]     LDD   #1152
+  0005 5b00         [2]     STAB  _TSCR1
+   28:    TSCR2 = 0x04;   // divide by 16 TCNT prescale, TOI disarm
+  0007 5a00         [2]     STAA  _TSCR2
+   29:    PACTL = 0;      // timer prescale used for TCNT
+  0009 790000       [3]     CLR   _PACTL
+   30:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
+   31:      divide  FastMode(24MHz)    Slow Mode (4MHz)
+   32:  000   1     42ns  TOF  2.73ms  250ns TOF 16.384ms
+   33:  001   2     84ns  TOF  5.46ms  500ns TOF 32.768ms 
+   34:  010   4    167ns  TOF  10.9ms    1us TOF 65.536ms   
+   35:  011   8    333ns  TOF  21.8ms 	 2us TOF 131.072ms
+   36:  100  16    667ns  TOF  43.7ms 	 4us TOF 262.144ns
+   37:  101  32   1.33us  TOF  87.4ms		 8us TOF 524.288ms
+   38:  110  64   2.67us  TOF 174.8ms   16us TOF 1.048576s
+   39:  111 128   5.33us  TOF 349.5ms   32us TOF 2.097152s */ 
+   40:  }
+  000c 3d           [5]     RTS   
+   41:  
+   42:  
+   43:  //---------Timer_Wait------------------
+   44:  // fixed time delay
+   45:  // inputs: time to wait in 667ns cycles
+   46:  // outputs: none
+   47:  void Timer_Wait(unsigned short delay){ 
+*** EVALUATION ***
+
+Function: Timer_Wait
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   48:  unsigned short startTime;
+   49:    startTime = TCNT;
+  0002 dc00         [3]     LDD   _TCNT
+  0004 6c82         [2]     STD   2,SP
+   50:    while((TCNT-startTime) <= delay){} 
+  0006 dc00         [3]     LDD   _TCNT
+  0008 a382         [3]     SUBD  2,SP
+  000a ac80         [3]     CPD   0,SP
+  000c 23f8         [3/1]   BLS   *-6 ;abs = 0006
+   51:  }
+  000e 1b84         [2]     LEAS  4,SP
+  0010 3d           [5]     RTS   
+   52:  
+   53:  //---------Timer_Wait1ms------------------
+   54:  // fixed time delay
+   55:  // inputs: time to wait in ms
+   56:  // outputs: none
+   57:  // 1500 cycles equals 1ms
+   58:  void Timer_Wait1ms(unsigned short delay){ 
+*** EVALUATION ***
+
+Function: Timer_Wait1ms
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+   59:    for(;delay>0;delay--){
+  0000 b745         [1]     TFR   D,X
+  0002 2008         [3]     BRA   *+10 ;abs = 000c
+   60:      Timer_Wait(1500);
+  0004 cc05dc       [2]     LDD   #1500
+  0007 34           [2]     PSHX  
+  0008 0700         [4]     BSR   Timer_Wait
+  000a 30           [3]     PULX  
+  000b 09           [1]     DEX   
+  000c 0475f5       [3]     TBNE  X,*-8 ;abs = 0004
+   61:    }
+   62:  }
+  000f 3d           [5]     RTS   
+   63:  
+   64:  //---------Timer_Wait10ms------------------
+   65:  // fixed time delay
+   66:  // inputs: time to wait in 10ms
+   67:  // outputs: none
+   68:  // 15000 cycles equals 10ms
+   69:  void Timer_Wait10ms(unsigned short delay){
+*** EVALUATION ***
+
+Function: Timer_Wait10ms
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+   70:    for(;delay>0;delay--){
+  0000 b745         [1]     TFR   D,X
+  0002 2008         [3]     BRA   *+10 ;abs = 000c
+   71:      Timer_Wait(15000);
+  0004 cc3a98       [2]     LDD   #15000
+  0007 34           [2]     PSHX  
+  0008 0700         [4]     BSR   Timer_Wait
+  000a 30           [3]     PULX  
+  000b 09           [1]     DEX   
+  000c 0475f5       [3]     TBNE  X,*-8 ;abs = 0004
+   72:    }
+   73:  }
+  000f 3d           [5]     RTS   
+   74:  
+   75:  
+   76:  
+   77:  //==========================================
+   78:  
+   79:  //---------------------mwait---------------------
+   80:  // wait specified number of msec
+   81:  // Input: number of msec to wait
+   82:  // Output: none
+   83:  // assumes TCNT timer is running at 667ns
+   84:  void mwait(unsigned short msec){ 
+*** EVALUATION ***
+
+Function: mwait
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   85:  unsigned short startTime;
+   86:    for(; msec>0; msec--){
+  0002 2012         [3]     BRA   *+20 ;abs = 0016
+   87:      startTime = TCNT;
+  0004 dc00         [3]     LDD   _TCNT
+  0006 6c82         [2]     STD   2,SP
+   88:      while((TCNT-startTime) <= 1500){} 
+  0008 dc00         [3]     LDD   _TCNT
+  000a a382         [3]     SUBD  2,SP
+  000c 8c05dc       [2]     CPD   #1500
+  000f 23f7         [3/1]   BLS   *-7 ;abs = 0008
+  0011 ee80         [3]     LDX   0,SP
+  0013 09           [1]     DEX   
+  0014 6e80         [2]     STX   0,SP
+  0016 ec80         [3]     LDD   0,SP
+  0018 26ea         [3/1]   BNE   *-20 ;abs = 0004
+   89:    }
+   90:  }
+  001a 1b84         [2]     LEAS  4,SP
+  001c 3d           [5]     RTS   
+   91:  
+   92:  //---------------------check---------------------
+   93:  // if LCD broken toggle LED1 at 2Hz
+   94:  // Input: last LCD status, 0 means bad
+   95:  // Output: none
+   96:  // Error: if status is zero, this function will not return
+   97:  void check(short status){	 // 0 if LCD is broken
+*** EVALUATION ***
+
+Function: check
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+   98:    if(status ==0){		   
+  0000 04640f       [3]     TBNE  D,*+18 ;abs = 0012
+   99:      for(;;) {
+  100:        PTP ^= 0x80;   // fast toggle LED
+  0003 f60000       [3]     LDAB  _PTP
+  0006 c880         [1]     EORB  #128
+  0008 7b0000       [3]     STAB  _PTP
+  101:        mwait(250);    // 0.25 sec wait
+  000b c6fa         [1]     LDAB  #250
+  000d 87           [1]     CLRA  
+  000e 0700         [4]     BSR   mwait
+  0010 20f1         [3]     BRA   *-13 ;abs = 0003
+  102:      }
+  103:    }
+  104:  }
+  0012 3d           [5]     RTS   
+  105:  //---------------------swait---------------------
+  106:  // wait specified 2 sec, then clear LCD
+  107:  // Input: none
+  108:  // Output: none
+  109:  // uses mswait and TCNT timer
+  110:  void swait(void){			
+*** EVALUATION ***
+
+Function: swait
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+  111:    PTP ^= 0x80;    // toggle LED0
+  0000 f60000       [3]     LDAB  _PTP
+  0003 c880         [1]     EORB  #128
+  0005 7b0000       [3]     STAB  _PTP
+  112:    mwait(2000);    // 2 sec wait
+  0008 cc07d0       [2]     LDD   #2000
+  000b 0700         [4]     BSR   mwait
+  113:    check(LCD_Clear());
+  000d 160000       [4]     JSR   LCD_Clear
+  0010 060000       [3]     JMP   check
+  114:  }
+  115:  
+  116:  //---------------------blank---------------------
+  117:  // move cursor to second half of LCD display
+  118:  // 32 spaces from address 08 to 40
+  119:  // Input: none
+  120:  // Output: none
+  121:  void blank(void){
+*** EVALUATION ***
+
+Function: blank
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Timer.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Timer.C.o" -WmsgSd1106
+
+  122:    check(LCD_OutString("                                "));
+  0000 cc0000       [2]     LDD   #"                                "
+  0003 160000       [4]     JSR   LCD_OutString
+  0006 060000       [3]     JMP   check
+  123:  }

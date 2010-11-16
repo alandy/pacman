@@ -1,0 +1,1097 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  /*    
+    2:  	rev 0.4.1112.1830.A
+    3:   
+    4:   	xb_9s12.c
+    5:   	Implements xbee interface as background thread for 9s12
+    6:  
+    7:  	Created: November 12, 2010, 14:00 - AML
+    8:  	Modified: November 12, 2010 18:30 - AML
+    9:   
+   10:  	Created for EE 464 Project Pac-Man
+   11:   
+   12:  #EOC*/
+   13:  
+   14:  #include <mc9s12dp512.h>     /* derivative information */
+   15:  #include "SCI1.h"
+   16:  #include "xbee.h"
+   17:  #include "queue.h"
+   18:  
+   19:  typedef struct {
+   20:    unsigned char * buf;
+   21:    int size;
+   22:  }txBufferEntry;
+   23:  
+   24:  
+   25:  //-------------------------Module Globals------------------------
+   26:  #define RDRF 0x20   // Receive Data Register Full Bit
+   27:  #define TDRE 0x80   // Transmit Data Register Empty Bit
+   28:  #define FIFOSIZE 20
+   29:  
+   30:  txBufferEntry * TXFIFO[FIFOSIZE];
+   31:  queue txFifo = {TXFIFO, 0, 0, 0, FIFOSIZE, 0,};
+   32:  
+   33:  extern xbModule xbee;
+   34:            
+   35:  #define CLOCKS_PER_US 24//(CLOCKS_PER_SEC / 1000000)
+   36:  
+   37:  time_t startTime;
+   38:  
+   39:  xbModule xbee;
+   40:  
+   41:  xbPacketRX16 * rxPacket_Q[MAX_QUEUED_PACKETS];
+   42:  queue rxQ = {
+   43:  	rxPacket_Q, 0, 0, 0, MAX_QUEUED_PACKETS
+   44:  };
+   45:  
+   46:  xbAckQEntry * txACKWaitlist_Q[MAX_WAITLIST_SIZE];
+   47:  queue txackQ = {
+   48:  	txACKWaitlist_Q, 0, 0, 0, MAX_QUEUED_PACKETS
+   49:  };
+   50:  
+   51:  
+   52:  
+   53:  /****************Serial_WriteQ****************
+   54:   * Write bytes to serial port specified by file descriptor returned
+   55:   * by previous call to Serial_Open().
+   56:   * buf[0] -> buf[bytes - 1] will be written
+   57:   * Inputs:	buf - pointer to bytes to be written
+   58:   *			bytes - number of bytes to write
+   59:   * Returns the number of bytes successfully written.
+   60:   */
+   61:  int Serial_WriteQ(SerialPort port, unsigned char * buf, int bytes) {
+*** EVALUATION ***
+
+Function: Serial_WriteQ
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   62:  	int i;
+   63:    txBufferEntry * tx = malloc(sizeof(txBufferEntry));
+  0001 c604         [1]     LDAB  #4
+  0003 87           [1]     CLRA  
+  0004 160000       [4]     JSR   malloc
+   64:    
+   65:    tx->buf = buf;
+  0007 ee84         [3]     LDX   4,SP
+  0009 b746         [1]     TFR   D,Y
+  000b 6e40         [2]     STX   0,Y
+   66:    tx->size = bytes;
+  000d ee80         [3]     LDX   0,SP
+  000f 6e42         [2]     STX   2,Y
+   67:    
+   68:    QPut(&txFifo, tx);
+  0011 ce0000       [2]     LDX   #txFifo
+  0014 34           [2]     PSHX  
+  0015 160000       [4]     JSR   QPut
+   69:    
+   70:    //Enable TDRE interrupts
+   71:    SCI1CR2 |= 0x80;
+  0018 4c0080       [4]     BSET  _SCI1CR2,#128
+   72:  
+   73:  	return bytes;                                                                       	                                
+  001b eca1         [3]     LDD   2,+SP
+   74:  }
+  001d 30           [3]     PULX  
+  001e 3d           [5]     RTS   
+   75:  
+   76:  interrupt 21 void sci1Handler(void) {
+*** EVALUATION ***
+
+Function: sci1Handler
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+   77:    unsigned char sr1 = SCI1SR1;
+  0000 d600         [3]     LDAB  _SCI1SR1
+  0002 37           [2]     PSHB  
+   78:    static int txInProgress = 0, i;
+   79:    static txBufferEntry * tx;
+   80:    
+   81:    if (sr1 & TDRE) {
+  0003 0f808061     [4]     BRCLR 0,SP,#128,*+101 ;abs = 0068
+   82:     // Transmit register is empty. This may be a TDRE interrupt
+   83:     
+   84:      if (txInProgress) {
+  0007 fc0000       [3]     LDD   txInProgress
+  000a 2724         [3/1]   BEQ   *+38 ;abs = 0030
+   85:        SCI1DRL = tx->buf[i++];
+  000c fe0000       [3]     LDX   i
+  000f 1901         [2]     LEAY  1,X
+  0011 7d0000       [3]     STY   i
+  0014 b754         [1]     TFR   X,D
+  0016 e3fb0000     [6]     ADDD  [tx,PCR]
+  001a b745         [1]     TFR   D,X
+  001c e600         [3]     LDAB  0,X
+  001e 5b00         [2]     STAB  _SCI1DRL
+   86:        if ( i >= tx->size ) {
+  0020 fe0000       [3]     LDX   tx
+  0023 ad02         [3]     CPY   2,X
+  0025 2d41         [3/1]   BLT   *+67 ;abs = 0068
+   87:          txInProgress = 0;
+  0027 c7           [1]     CLRB  
+  0028 87           [1]     CLRA  
+  0029 7c0000       [3]     STD   txInProgress
+   88:          //free(tx->buf);
+   89:          free(tx);
+  002c b754         [1]     TFR   X,D
+  002e 202b         [3]     BRA   *+45 ;abs = 005b
+   90:        }
+   91:      } else if (txFifo.size > 0) {
+  0030 fc0000       [3]     LDD   txFifo:6
+  0033 2f30         [3/1]   BLE   *+50 ;abs = 0065
+   92:        tx = (char *)QGet(&txFifo);
+  0035 cc0000       [2]     LDD   #txFifo
+  0038 160000       [4]     JSR   QGet
+  003b 7c0000       [3]     STD   tx
+   93:        i = 0;
+   94:        SCI1DRL = tx->buf[i++];
+  003e ce0001       [2]     LDX   #1
+  0041 7e0000       [3]     STX   i
+  0044 edfb0000     [6]     LDY   [tx,PCR]
+  0048 e640         [3]     LDAB  0,Y
+  004a 5b00         [2]     STAB  _SCI1DRL
+   95:        if ( i >= tx->size ) {
+  004c b764         [1]     TFR   Y,D
+  004e fd0000       [3]     LDY   tx
+  0051 ae42         [3]     CPX   2,Y
+  0053 2d0b         [3/1]   BLT   *+13 ;abs = 0060
+   96:          free(tx->buf);
+  0055 160000       [4]     JSR   free
+   97:          free(tx);
+  0058 fc0000       [3]     LDD   tx
+  005b 160000       [4]     JSR   free
+   98:        } else txInProgress = 1;
+  005e 2008         [3]     BRA   *+10 ;abs = 0068
+  0060 7e0000       [3]     STX   txInProgress
+  0063 2003         [3]     BRA   *+5 ;abs = 0068
+   99:      } else {
+  100:        //Fifo empty, disable transmit interrupts until new data is ready
+  101:        SCI1CR2 &= ~0x80;
+  0065 4d0080       [4]     BCLR  _SCI1CR2,#128
+  102:      }
+  103:          
+  104:    } 
+  105:    
+  106:    if (sr1 & RDRF) {
+  0068 0f802006     [4]     BRCLR 0,SP,#32,*+10 ;abs = 0072
+  107:      // Receive register is full. This may be an RDRF interrupt
+  108:      packetProcessorNASM(SCI1DRL);
+  006c d600         [3]     LDAB  _SCI1DRL
+  006e 87           [1]     CLRA  
+  006f 160000       [4]     JSR   packetProcessorNASM
+  109:    
+  110:    }
+  111:    
+  112:  }
+  0072 32           [3]     PULA  
+  0073 0b           [8]     RTI   
+  113:  
+  114:  
+  115:  #define DEBUG_NO_XBEE 0
+  116:  
+  117:  int checkOK(void) {
+*** EVALUATION ***
+
+Function: checkOK
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  0000 1b94         [2]     LEAS  -12,SP
+  118:  
+  119:  #if (DEBUG_NO_XBEE == 0)	
+  120:  	unsigned char resp[10] = {0};
+  0002 6982         [2]     CLR   2,SP
+  0004 6983         [2]     CLR   3,SP
+  0006 6984         [2]     CLR   4,SP
+  0008 6985         [2]     CLR   5,SP
+  000a 6986         [2]     CLR   6,SP
+  000c 6987         [2]     CLR   7,SP
+  000e 6988         [2]     CLR   8,SP
+  0010 6989         [2]     CLR   9,SP
+  0012 698a         [2]     CLR   10,SP
+  0014 698b         [2]     CLR   11,SP
+  121:  	int i;
+  122:  	
+  123:  	//wait for three bytes, confirm they are OK<CR>
+  124:  	Serial_ReadnX(xbee.port, resp, 3);
+  0016 fc0000       [3]     LDD   xbee
+  0019 3b           [2]     PSHD  
+  001a 1a84         [2]     LEAX  4,SP
+  001c 34           [2]     PSHX  
+  001d c603         [1]     LDAB  #3
+  001f 87           [1]     CLRA  
+  0020 6e84         [2]     STX   4,SP
+  0022 160000       [4]     JSR   Serial_ReadnX
+  125:  	
+  126:  	if (strcmp(resp, "OK\r")) {
+  0025 eca3         [3]     LDD   4,+SP
+  0027 3b           [2]     PSHD  
+  0028 cc0000       [2]     LDD   #"OK\015"
+  002b 160000       [4]     JSR   strcmp
+  002e 1b82         [2]     LEAS  2,SP
+  0030 044403       [3]     TBEQ  D,*+6 ;abs = 0036
+  127:  		return -2;
+  0033 ccfffe       [2]     LDD   #65534
+  128:  	}
+  129:  	return 0;
+  130:  #else
+  131:  	return 0;
+  132:  #endif
+  133:  }
+  0036 1b8c         [2]     LEAS  12,SP
+  0038 3d           [5]     RTS   
+  134:  
+  135:  //address must be a null-terminated ascii string
+  136:  int xb_Init(char * address, char * devpath) {
+*** EVALUATION ***
+
+Function: xb_Init
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  0000 1b96         [2]     LEAS  -10,SP
+  0002 3b           [2]     PSHD  
+  0003 3b           [2]     PSHD  
+  137:  	unsigned char msg[10] = {0};
+  0004 6984         [2]     CLR   4,SP
+  0006 6985         [2]     CLR   5,SP
+  0008 6986         [2]     CLR   6,SP
+  000a 6987         [2]     CLR   7,SP
+  000c 6988         [2]     CLR   8,SP
+  000e 6989         [2]     CLR   9,SP
+  0010 698a         [2]     CLR   10,SP
+  0012 698b         [2]     CLR   11,SP
+  0014 698c         [2]     CLR   12,SP
+  0016 698d         [2]     CLR   13,SP
+  138:  	int checkStatus = 0;
+  139:  	
+  140:  	startTime = time(NULL);
+  0018 c7           [1]     CLRB  
+  0019 87           [1]     CLRA  
+  001a 160000       [4]     JSR   time
+  001d 7c0000       [3]     STD   startTime:2
+  0020 7e0000       [3]     STX   startTime
+  141:  	
+  142:  	xbee.port = Serial_Open(devpath, 9600, 0); 
+  0023 ec82         [3]     LDD   2,SP
+  0025 3b           [2]     PSHD  
+  0026 cc2580       [2]     LDD   #9600
+  0029 3b           [2]     PSHD  
+  002a c7           [1]     CLRB  
+  002b 87           [1]     CLRA  
+  002c 160000       [4]     JSR   Serial_Open
+  002f 1b84         [2]     LEAS  4,SP
+  0031 7c0000       [3]     STD   xbee
+  143:  	
+  144:  	usleep(1000000);
+  0034 cc4240       [2]     LDD   #16960
+  0037 160000       [4]     JSR   usleep
+  145:  	strcpy((char *)msg, "+++");
+  003a 1a84         [2]     LEAX  4,SP
+  003c 34           [2]     PSHX  
+  003d cc0000       [2]     LDD   #"+++"
+  0040 6e82         [2]     STX   2,SP
+  0042 160000       [4]     JSR   strcpy
+  146:  	Serial_Write(xbee.port, msg, 3);
+  0045 fc0000       [3]     LDD   xbee
+  0048 6c80         [2]     STD   0,SP
+  004a ec82         [3]     LDD   2,SP
+  004c 3b           [2]     PSHD  
+  004d c603         [1]     LDAB  #3
+  004f 87           [1]     CLRA  
+  0050 160000       [4]     JSR   Serial_Write
+  0053 1b84         [2]     LEAS  4,SP
+  147:  	usleep(1000000);
+  0055 cc4240       [2]     LDD   #16960
+  0058 160000       [4]     JSR   usleep
+  148:  /*	if (SCI1_InStatus == 0) {
+  149:  	    //OK is not ready, so there must be a connection issue, probably a baud mismatch
+  150:  	    Serial_SetSpeed(1, 115200);
+  151:  	    
+  152:  	    //Retry the write
+  153:  	    	usleep(1000000);
+  154:  	      Serial_Write(xbee.port, msg, 3);
+  155:  	      usleep(1000000);
+  156:  	}*/
+  157:  	
+  158:  	checkStatus = checkOK();
+  005b 160000       [4]     JSR   xb_Init:0x00e2
+  159:  	if (checkStatus  < 0) {
+  005e 2c02         [3/1]   BGE   *+4 ;abs = 0062
+  160:  		return checkStatus;
+  0060 207d         [3]     BRA   *+127 ;abs = 00df
+  161:  	}
+  162:  	
+  163:  	xbee.address = atoi( address );
+  0062 ecf010       [3]     LDD   16,SP
+  0065 3b           [2]     PSHD  
+  0066 c7           [1]     CLRB  
+  0067 87           [1]     CLRA  
+  0068 3b           [2]     PSHD  
+  0069 c60a         [1]     LDAB  #10
+  006b 160000       [4]     JSR   strtol
+  006e 7c0000       [3]     STD   xbee:2
+  164:  	
+  165:  	//Set Address, wait for acknowledge
+  166:  	sprintf(msg, "%s %s%c","ATMY", address, '\r');
+  0071 c60d         [1]     LDAB  #13
+  0073 87           [1]     CLRA  
+  0074 6ca1         [2]     STD   2,+SP
+  0076 eef012       [3]     LDX   18,SP
+  0079 34           [2]     PSHX  
+  007a ce0000       [2]     LDX   #"ATMY"
+  007d 34           [2]     PSHX  
+  007e cd0000       [2]     LDY   #"%s %s%c"
+  0081 35           [2]     PSHY  
+  0082 ec88         [3]     LDD   8,SP
+  0084 3b           [2]     PSHD  
+  0085 160000       [4]     JSR   sprintf
+  167:  	Serial_Write(xbee.port, msg , 7 + strlen(address));
+  0088 fc0000       [3]     LDD   xbee
+  008b 6ca7         [2]     STD   8,+SP
+  008d ec82         [3]     LDD   2,SP
+  008f 3b           [2]     PSHD  
+  0090 ecf014       [3]     LDD   20,SP
+  0093 160000       [4]     JSR   strlen
+  0096 c30007       [2]     ADDD  #7
+  0099 160000       [4]     JSR   Serial_Write
+  009c 1b84         [2]     LEAS  4,SP
+  168:  	
+  169:  	checkStatus = checkOK();
+  009e 0742         [4]     BSR   *+68 ;abs = 00e2
+  170:  	if (checkStatus  < 0) {
+  00a0 2c02         [3/1]   BGE   *+4 ;abs = 00a4
+  171:  		return checkStatus;
+  00a2 203b         [3]     BRA   *+61 ;abs = 00df
+  172:  	}
+  173:  	
+  174:  	//Enter API mode, wait for acknowledge
+  175:  	strcpy((char *)msg, "ATAP 1\r");
+  00a4 ec80         [3]     LDD   0,SP
+  00a6 3b           [2]     PSHD  
+  00a7 cc0000       [2]     LDD   #"ATAP 1\015"
+  00aa 160000       [4]     JSR   strcpy
+  176:  	Serial_Write(xbee.port, msg, 7);     
+  00ad fc0000       [3]     LDD   xbee
+  00b0 6c80         [2]     STD   0,SP
+  00b2 ec82         [3]     LDD   2,SP
+  00b4 3b           [2]     PSHD  
+  00b5 c607         [1]     LDAB  #7
+  00b7 87           [1]     CLRA  
+  00b8 160000       [4]     JSR   Serial_Write
+  00bb 1b84         [2]     LEAS  4,SP
+  177:  
+  178:  	checkStatus = checkOK();
+  00bd 0723         [4]     BSR   *+37 ;abs = 00e2
+  179:  	if (checkStatus  < 0) {
+  00bf 2c02         [3/1]   BGE   *+4 ;abs = 00c3
+  180:  		return checkStatus;
+  00c1 201c         [3]     BRA   *+30 ;abs = 00df
+  181:  	}
+  182:  	
+  183:  	/*//Change baud rate to 115200
+  184:  	sprintf((char *) msg, "ATBD 7\r");
+  185:  	Serial_Write(xbee.port, msg, 7);
+  186:  	
+  187:  	checkStatus = checkOK();
+  188:  	if (checkStatus  < 0) {
+  189:  		return checkStatus;
+  190:  	} */
+  191:  	
+  192:  	//Exit command mode, wait for acknowledge
+  193:  	Serial_Write(xbee.port, (unsigned char *)"ATCN\r", 5);       
+  00c3 fc0000       [3]     LDD   xbee
+  00c6 3b           [2]     PSHD  
+  00c7 cc0000       [2]     LDD   #"ATCN\015"
+  00ca 3b           [2]     PSHD  
+  00cb c605         [1]     LDAB  #5
+  00cd 87           [1]     CLRA  
+  00ce 160000       [4]     JSR   Serial_Write
+  00d1 1b84         [2]     LEAS  4,SP
+  194:  	
+  195:  	checkStatus = checkOK();
+  00d3 070d         [4]     BSR   *+15 ;abs = 00e2
+  196:  	if (checkStatus  < 0) {
+  00d5 2c02         [3/1]   BGE   *+4 ;abs = 00d9
+  197:  		return checkStatus;
+  00d7 2006         [3]     BRA   *+8 ;abs = 00df
+  198:  	}
+  199:  	
+  200:  	//Change baud rate of Serial port to match new speed set on xbee
+  201:  	//Serial_SetSpeed(xbee.port, 115200);
+  202:  	
+  203:    //Enable SCI1 RDRF interrupts, TCIE will be set on first write
+  204:    SCI1CR2 |= 0x20;
+  00d9 4c0020       [4]     BSET  _SCI1CR2,#32
+  205:    
+  206:  	return xbee.port;
+  00dc fc0000       [3]     LDD   xbee
+  207:  }
+  00df 1b8e         [2]     LEAS  14,SP
+  00e1 3d           [5]     RTS   
+  00e2 160000       [4]     JSR   checkOK
+  00e5 8c0000       [2]     CPD   #0
+  00e8 3d           [5]     RTS   
+  208:  
+  209:  int xb_RXStat(void) {
+*** EVALUATION ***
+
+Function: xb_RXStat
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  210:  	return rxQ.size;
+  0000 fc0000       [3]     LDD   rxQ:6
+  211:  }
+  0003 3d           [5]     RTS   
+  212:  
+  213:  int xb_TXStat(void) {
+*** EVALUATION ***
+
+Function: xb_TXStat
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  214:  	return txackQ.size;
+  0000 fc0000       [3]     LDD   txackQ:6
+  215:  }
+  0003 3d           [5]     RTS   
+  216:  
+  217:  
+  218:  //Receieve a processed xb packet from the rx fifo
+  219:  xbPacketRX16 * xb_ReceivePacket(void) {
+*** EVALUATION ***
+
+Function: xb_ReceivePacket
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  220:  	// Dequeue a processed packet
+  221:  	return (xbPacketRX16 *) QGet(&rxQ);
+  0000 cc0000       [2]     LDD   #rxQ
+  0003 160000       [4]     JSR   QGet
+  222:  }
+  0006 3d           [5]     RTS   
+  223:              
+  224:   
+  225:    
+  226:  #define RX16_START 4
+  227:  #define TXSTAT_START 8
+  228:  
+  229:  //Non-Atomic State Machine Based Packet Processor
+  230:  int packetProcessorNASM(unsigned char data){
+*** EVALUATION ***
+
+Function: packetProcessorNASM
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  0000 1b96         [2]     LEAS  -10,SP
+  0002 37           [2]     PSHB  
+  231:    
+  232:    static int state;
+  233:    
+  234:    static int i, length, APIIdent;
+  235:    static xbPacketRX16 * rxPt;
+  236:    static xbPacketTXstat * txStatPt;
+  237:    xbAckQEntry * ackEntry; 
+  238:   
+  239:    int waitTime, j, srcHI;
+  240:    err_t exitVal = OK;
+  0003 c7           [1]     CLRB  
+  0004 87           [1]     CLRA  
+  0005 6c81         [2]     STD   1,SP
+  241:   
+  242:    //Switch on SM State
+  243:    switch (state) {
+  0007 fc0000       [3]     LDD   state
+  000a 160000       [4]     JSR   _CASE_CHECKED
+  000d 000b         DC.W  11
+  000f 0000         DC.W  packetProcessorNASM:0x01d6
+  0011 0000         DC.W  packetProcessorNASM:0x0027
+  0013 0000         DC.W  packetProcessorNASM:0x003a
+  0015 0000         DC.W  packetProcessorNASM:0x0046
+  0017 0000         DC.W  packetProcessorNASM:0x0053
+  0019 0000         DC.W  packetProcessorNASM:0x0075
+  001b 0000         DC.W  packetProcessorNASM:0x00ad
+  001d 0000         DC.W  packetProcessorNASM:0x00b9
+  001f 0000         DC.W  packetProcessorNASM:0x00cd
+  0021 0000         DC.W  packetProcessorNASM:0x00fa
+  0023 0000         DC.W  packetProcessorNASM:0x0131
+  0025 0000         DC.W  packetProcessorNASM:0x0148
+  244:    
+  245:      case 0:
+  246:        if (data == 0x7E) {
+  0027 e680         [3]     LDAB  0,SP
+  0029 c17e         [1]     CMPB  #126
+  002b 2604         [3/1]   BNE   *+6 ;abs = 0031
+  247:          // Start Delimiter found
+  248:          state = 1;
+  002d c601         [1]     LDAB  #1
+  249:        } else {
+  002f 2020         [3]     BRA   *+34 ;abs = 0051
+  250:          // Wrong value found, packet processor has become desynchronized 
+  251:          // or there is an error
+  252:          state = 0;
+  0031 c7           [1]     CLRB  
+  0032 87           [1]     CLRA  
+  0033 7c0000       [3]     STD   state
+  253:          exitVal = PACKET_DESYNC;
+  0036 c604         [1]     LDAB  #4
+  0038 202f         [3]     BRA   *+49 ;abs = 0069
+  254:        }
+  255:        
+  256:        break;
+  257:        
+  258:      case 1:
+  259:        //Read packet length MSB
+  260:        length = (data & 0xFF) << 8;
+  003a e680         [3]     LDAB  0,SP
+  003c b710         [1]     TFR   B,A
+  003e c7           [1]     CLRB  
+  003f 7c0000       [3]     STD   length
+  261:        state = 2;
+  0042 c602         [1]     LDAB  #2
+  262:        
+  263:        break;
+  0044 200b         [3]     BRA   *+13 ;abs = 0051
+  264:        
+  265:      case 2:
+  266:        //Read packet length LSB
+  267:        length += (data & 0xFF);
+  0046 e680         [3]     LDAB  0,SP
+  0048 87           [1]     CLRA  
+  0049 f30000       [3]     ADDD  length
+  004c 7c0000       [3]     STD   length
+  268:        state = 3;
+  004f c603         [1]     LDAB  #3
+  269:        
+  270:        break;
+  0051 2078         [3]     BRA   *+122 ;abs = 00cb
+  271:        
+  272:      case 3:
+  273:        //Read API Identifier
+  274:        APIIdent = data;
+  0053 e680         [3]     LDAB  0,SP
+  0055 87           [1]     CLRA  
+  0056 7c0000       [3]     STD   APIIdent
+  275:        
+  276:        // Switch next state based on APIIdent
+  277:        switch (APIIdent) {
+  0059 8c0081       [2]     CPD   #129
+  005c 2710         [3/1]   BEQ   *+18 ;abs = 006e
+  005e 8c0089       [2]     CPD   #137
+  0061 270e         [3/1]   BEQ   *+16 ;abs = 0071
+  278:          
+  279:          case 0x81:
+  280:          
+  281:            state = RX16_START;
+  282:            break;
+  283:            
+  284:          case 0x89:
+  285:          
+  286:            state = TXSTAT_START;
+  287:            break;
+  288:            
+  289:          default:
+  290:            state = 0;
+  0063 c7           [1]     CLRB  
+  0064 7c0000       [3]     STD   state
+  291:            exitVal = UNKNOWN_PACKETID;
+  0067 c605         [1]     LDAB  #5
+  0069 6c81         [2]     STD   1,SP
+  292:            break;
+  006b 060000       [3]     JMP   packetProcessorNASM:0x01d6
+  006e c604         [1]     LDAB  #4
+  0070 8f           [2]     SKIP2 
+  0071 c608         [1]     LDAB  #8
+  0073 2035         [3]     BRA   *+55 ;abs = 00aa
+  293:        
+  294:        }
+  295:        
+  296:        break;
+  297:              
+  298:      case 4:
+  299:        //RX16 packet, Read source MSB
+  300:        rxPt = (xbPacketRX16 *) malloc(length + 4);
+  0075 160000       [4]     JSR   packetProcessorNASM:0x01f0
+  0078 7c0000       [3]     STD   rxPt
+  301:        if (!rxPt) {
+  007b 2609         [3/1]   BNE   *+11 ;abs = 0086
+  302:          exitVal = MALLOC_FAIL;
+  007d c603         [1]     LDAB  #3
+  007f 87           [1]     CLRA  
+  0080 6c81         [2]     STD   1,SP
+  303:          state = 0;
+  0082 c7           [1]     CLRB  
+  0083 7c0000       [3]     STD   state
+  304:        }
+  305:        
+  306:        rxPt->delim = 0x7E;
+  0086 c67e         [1]     LDAB  #126
+  0088 6bfb0000     [4]     STAB  [rxPt,PCR]
+  307:        rxPt->length = length;
+  008c fc0000       [3]     LDD   length
+  008f fe0000       [3]     LDX   rxPt
+  0092 6c01         [2]     STD   1,X
+  308:        rxPt->APIIdent = APIIdent;
+  0094 f60000       [3]     LDAB  APIIdent:1
+  0097 6b03         [2]     STAB  3,X
+  309:        srcHI = (data & 0xFF) << 8;
+  0099 e680         [3]     LDAB  0,SP
+  009b 6b87         [2]     STAB  7,SP
+  009d 6988         [2]     CLR   8,SP
+  310:        rxPt->source = srcHI;
+  009f ec87         [3]     LDD   7,SP
+  00a1 6c04         [2]     STD   4,X
+  311:        
+  312:        i = 0;
+  00a3 c7           [1]     CLRB  
+  00a4 87           [1]     CLRA  
+  00a5 7c0000       [3]     STD   i
+  313:        state = 5;
+  00a8 c605         [1]     LDAB  #5
+  314:        
+  315:        break;
+  00aa 060000       [3]     JMP   packetProcessorNASM:0x01d3
+  316:         
+  317:      case 5:
+  318:        //Read source LSB
+  319:        rxPt->source += (data & 0xFF);
+  00ad e680         [3]     LDAB  0,SP
+  00af 87           [1]     CLRA  
+  00b0 fe0000       [3]     LDX   rxPt
+  00b3 e304         [3]     ADDD  4,X
+  00b5 6c04         [2]     STD   4,X
+  320:      
+  321:        state = 6;
+  322:        break;      
+  00b7 200d         [3]     BRA   *+15 ;abs = 00c6
+  323:        
+  324:      case 6:
+  325:        //Read rest (all but last) of packet into the packet structure, length - 3 bytes
+  326:        ((unsigned char *) rxPt + 6)[i++] = data;
+  00b9 160000       [4]     JSR   packetProcessorNASM:0x01db
+  327:        
+  328:        if (i < length - 3) state = 6;
+  00bc fe0000       [3]     LDX   length
+  00bf 1a1d         [2]     LEAX  -3,X
+  00c1 be0000       [3]     CPX   i
+  00c4 2f03         [3/1]   BLE   *+5 ;abs = 00c9
+  00c6 c606         [1]     LDAB  #6
+  00c8 8f           [2]     SKIP2 
+  329:        else state = 7;
+  00c9 c607         [1]     LDAB  #7
+  00cb 2078         [3]     BRA   *+122 ;abs = 0145
+  330:        
+  331:        break;
+  332:              
+  333:      case 7:
+  334:        //Finish RX packet: Read last byte, stats, enqueue
+  335:        ((unsigned char *) rxPt + 6)[i++] = data;
+  00cd 160000       [4]     JSR   packetProcessorNASM:0x01db
+  336:        
+  337:        xbee.statistics.messagesReceived++;
+  00d0 fe0000       [3]     LDX   xbee:11
+  00d3 08           [1]     INX   
+  00d4 7e0000       [3]     STX   xbee:11
+  338:  			xbee.statistics.dataBytesReceived += (length - 4);
+  00d7 fc0000       [3]     LDD   length
+  00da 830004       [2]     SUBD  #4
+  00dd f30000       [3]     ADDD  xbee:13
+  00e0 7c0000       [3]     STD   xbee:13
+  339:  			
+  340:  			//place pointer to packet on rx packet queue
+  341:  			if (QPut(&rxQ, rxPt) == -1) exitVal = ERROR; //fifo full
+  00e3 cc0000       [2]     LDD   #rxQ
+  00e6 3b           [2]     PSHD  
+  00e7 fc0000       [3]     LDD   rxPt
+  00ea 160000       [4]     JSR   QPut
+  00ed 1b82         [2]     LEAS  2,SP
+  00ef 04a4df       [3]     IBNE  D,*+226 ;abs = 01d1
+  00f2 c602         [1]     LDAB  #2
+  00f4 87           [1]     CLRA  
+  00f5 6c81         [2]     STD   1,SP
+  00f7 060000       [3]     JMP   packetProcessorNASM:0x01d1
+  342:        
+  343:        state = 0;
+  344:        
+  345:        break;    
+  346:   
+  347:      case 8:
+  348:        //TXStat Packet, allocate, store first 4 bytes + new byte
+  349:        txStatPt = (xbPacketTXstat *) malloc(length + 4);
+  00fa 160000       [4]     JSR   packetProcessorNASM:0x01f0
+  00fd 7c0000       [3]     STD   txStatPt
+  350:        if (txStatPt == NULL) {
+  0100 2604         [3/1]   BNE   *+6 ;abs = 0106
+  351:          return MALLOC_FAIL;
+  0102 c603         [1]     LDAB  #3
+  0104 2060         [3]     BRA   *+98 ;abs = 0166
+  352:        }
+  353:        
+  354:        txStatPt->delim = 0x7E;
+  0106 c67e         [1]     LDAB  #126
+  0108 6bfb0000     [4]     STAB  [txStatPt,PCR]
+  355:        txStatPt->length = length;
+  010c fc0000       [3]     LDD   length
+  010f fe0000       [3]     LDX   txStatPt
+  0112 6c01         [2]     STD   1,X
+  356:        txStatPt->APIIdent = APIIdent;
+  0114 f60000       [3]     LDAB  APIIdent:1
+  0117 e804         [3]     EORB  4,X
+  0119 87           [1]     CLRA  
+  011a e804         [3]     EORB  4,X
+  011c a803         [3]     EORA  3,X
+  011e 6c03         [2]     STD   3,X
+  357:        
+  358:        txStatPt->frameID = data;
+  0120 e680         [3]     LDAB  0,SP
+  0122 b710         [1]     TFR   B,A
+  0124 a803         [3]     EORA  3,X
+  0126 c7           [1]     CLRB  
+  0127 e804         [3]     EORB  4,X
+  0129 a803         [3]     EORA  3,X
+  012b 6c03         [2]     STD   3,X
+  359:        
+  360:        state = 9;
+  012d c609         [1]     LDAB  #9
+  361:        
+  362:        break;
+  012f 2014         [3]     BRA   *+22 ;abs = 0145
+  363:        
+  364:      case 9:
+  365:        //Read ack status
+  366:        
+  367:        txStatPt->status = data;
+  0131 e680         [3]     LDAB  0,SP
+  0133 87           [1]     CLRA  
+  0134 6c85         [2]     STD   5,SP
+  0136 fe0000       [3]     LDX   txStatPt
+  0139 e606         [3]     LDAB  6,X
+  013b e886         [3]     EORB  6,SP
+  013d e806         [3]     EORB  6,X
+  013f a805         [3]     EORA  5,X
+  0141 6c05         [2]     STD   5,X
+  368:        
+  369:        state = 10;
+  0143 c60a         [1]     LDAB  #10
+  370:        break;
+  0145 060000       [3]     JMP   packetProcessorNASM:0x01d2
+  371:        
+  372:      case 10:
+  373:        //Read checksum
+  374:        
+  375:        txStatPt->checksum = data;
+  0148 e680         [3]     LDAB  0,SP
+  014a 87           [1]     CLRA  
+  014b 6c85         [2]     STD   5,SP
+  014d b710         [1]     TFR   B,A
+  014f fe0000       [3]     LDX   txStatPt
+  0152 a805         [3]     EORA  5,X
+  0154 c7           [1]     CLRB  
+  0155 e806         [3]     EORB  6,X
+  0157 a805         [3]     EORA  5,X
+  0159 6c05         [2]     STD   5,X
+  376:      
+  377:    	  //pull ack frame off of ack waitlist queue
+  378:  			while (1) {
+  379:  				ackEntry = QGet(&txackQ);
+  015b cc0000       [2]     LDD   #txackQ
+  015e 160000       [4]     JSR   QGet
+  0161 6c83         [2]     STD   3,SP
+  380:  				if (ackEntry == 0) {
+  0163 2604         [3/1]   BNE   *+6 ;abs = 0169
+  381:  					//printf("ACK message Q mismatch, something is horribly wrong!\n");
+  382:  					return OK;
+  0165 c7           [1]     CLRB  
+  0166 87           [1]     CLRA  
+  0167 206f         [3]     BRA   *+113 ;abs = 01d8
+  383:  				}
+  384:  				if (txStatPt->frameID == ackEntry->frame_id) {
+  0169 fe0000       [3]     LDX   txStatPt
+  016c ec03         [3]     LDD   3,X
+  016e b701         [1]     TFR   A,B
+  0170 87           [1]     CLRA  
+  0171 ed83         [3]     LDY   3,SP
+  0173 ac40         [3]     CPD   0,Y
+  0175 270d         [3/1]   BEQ   *+15 ;abs = 0184
+  385:  					break;
+  386:  				} else {
+  387:  					QPut(&txackQ, txStatPt);
+  0177 cc0000       [2]     LDD   #txackQ
+  017a 3b           [2]     PSHD  
+  017b b754         [1]     TFR   X,D
+  017d 160000       [4]     JSR   QPut
+  0180 1b82         [2]     LEAS  2,SP
+  0182 20d7         [3]     BRA   *-39 ;abs = 015b
+  388:  				}
+  389:  				
+  390:  			}
+  391:  			
+  392:  			if (txStatPt->status) {
+  393:  				//printf("Warning: TXStat Failure: No ACK Received for frame %x from dest %x", ackEntry->frame_id, ackEntry->packet->destination);
+  394:  			}
+  395:  			LCD_OutChar('0' + txStatPt->frameID);
+  0184 ec03         [3]     LDD   3,X
+  0186 b701         [1]     TFR   A,B
+  0188 87           [1]     CLRA  
+  0189 c30030       [2]     ADDD  #48
+  018c 160000       [4]     JSR   LCD_OutChar
+  396:  			waitTime = (clock() - ackEntry->qtime) / CLOCKS_PER_US;
+  018f ee83         [3]     LDX   3,SP
+  0191 34           [2]     PSHX  
+  0192 160000       [4]     JSR   clock
+  0195 31           [3]     PULY  
+  0196 a344         [3]     SUBD  4,Y
+  0198 b7c5         [1]     EXG   D,X
+  019a e243         [3]     SBCB  3,Y
+  019c a242         [3]     SBCA  2,Y
+  019e cd0018       [2]     LDY   #24
+  01a1 35           [2]     PSHY  
+  01a2 b746         [1]     TFR   D,Y
+  01a4 c7           [1]     CLRB  
+  01a5 87           [1]     CLRA  
+  01a6 3b           [2]     PSHD  
+  01a7 b754         [1]     TFR   X,D
+  01a9 b765         [1]     TFR   Y,X
+  01ab 160000       [4]     JSR   _LDIVU
+  01ae 6c89         [2]     STD   9,SP
+  397:  			txackQ.statistics.waitTime += waitTime;
+  01b0 fc0000       [3]     LDD   txackQ:16
+  01b3 e389         [3]     ADDD  9,SP
+  01b5 7c0000       [3]     STD   txackQ:16
+  398:  			txackQ.statistics.total++;
+  01b8 fe0000       [3]     LDX   txackQ:18
+  01bb 08           [1]     INX   
+  01bc 7e0000       [3]     STX   txackQ:18
+  399:  			free(ackEntry->packet);
+  01bf ee83         [3]     LDX   3,SP
+  01c1 ec06         [3]     LDD   6,X
+  01c3 160000       [4]     JSR   free
+  400:  			free(ackEntry);
+  01c6 ec83         [3]     LDD   3,SP
+  01c8 160000       [4]     JSR   free
+  401:  			free(txStatPt);
+  01cb fc0000       [3]     LDD   txStatPt
+  01ce 160000       [4]     JSR   free
+  402:  			
+  403:  		
+  404:        
+  405:        
+  406:        state = 0;
+  01d1 c7           [1]     CLRB  
+  01d2 87           [1]     CLRA  
+  01d3 7c0000       [3]     STD   state
+  407:        break;
+  408:  
+  409:  
+  410:    }
+  411:   
+  412:   
+  413:    return exitVal;
+  01d6 ec81         [3]     LDD   1,SP
+  414:    
+  415:  }                                          
+  01d8 1b8b         [2]     LEAS  11,SP
+  01da 3d           [5]     RTS   
+  01db fc0000       [3]     LDD   rxPt
+  01de c30006       [2]     ADDD  #6
+  01e1 fe0000       [3]     LDX   i
+  01e4 1901         [2]     LEAY  1,X
+  01e6 7d0000       [3]     STY   i
+  01e9 1ae6         [2]     LEAX  D,X
+  01eb e682         [3]     LDAB  2,SP
+  01ed 6b00         [2]     STAB  0,X
+  01ef 3d           [5]     RTS   
+  01f0 fc0000       [3]     LDD   length
+  01f3 c30004       [2]     ADDD  #4
+  01f6 060000       [3]     JMP   malloc
+  416:  
+  417:  
+  418:  //Be very careful specifying addresses, they are configured in hex, be sure to pass as such
+  419:  
+  420:  int xb_SendPacket(short address, char frame_id, char options, unsigned char * data, char data_len) {
+*** EVALUATION ***
+
+Function: xb_SendPacket
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources\xb_9s12.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\xb_9s12.c.o" -WmsgSd1106
+
+  0000 1b98         [2]     LEAS  -8,SP
+  0002 37           [2]     PSHB  
+  421:  	unsigned int checksum = 0, i;
+  0003 c7           [1]     CLRB  
+  0004 87           [1]     CLRA  
+  0005 6c81         [2]     STD   1,SP
+  422:  	xbAckQEntry * ack;
+  423:  	xbPacketTX16 * txPt = malloc(9 + data_len);
+  0007 e680         [3]     LDAB  0,SP
+  0009 b714         [1]     SEX   B,D
+  000b c30009       [2]     ADDD  #9
+  000e 160000       [4]     JSR   malloc
+  0011 6c83         [2]     STD   3,SP
+  424:  	
+  425:  	if (txPt == NULL) {
+  0013 1827009f     [4/3]   LBEQ  *+163 ;abs = 00b6
+  426:  		return MALLOC_FAIL;
+  427:  	}
+  428:  	
+  429:  	if (data_len > 100) {
+  0017 e680         [3]     LDAB  0,SP
+  0019 c164         [1]     CMPB  #100
+  001b 182e0088     [4/3]   LBGT  *+140 ;abs = 00a7
+  430:  		return -1;
+  431:  	}
+  432:  	
+  433:  	txPt->delim = 0x7E;
+  001f ee83         [3]     LDX   3,SP
+  0021 c67e         [1]     LDAB  #126
+  0023 6b00         [2]     STAB  0,X
+  434:  	((unsigned char *) txPt)[1] = (unsigned char) (data_len + 5) >> 8;
+  0025 6901         [2]     CLR   1,X
+  435:  	((unsigned char *) txPt)[2] = (unsigned char) (data_len + 5) & 0xFF;
+  0027 a680         [3]     LDAA  0,SP
+  0029 8b05         [1]     ADDA  #5
+  002b 6a02         [2]     STAA  2,X
+  436:  	((unsigned char *) txPt)[3] = (unsigned char) 0x01;
+  002d 8601         [1]     LDAA  #1
+  002f 6a03         [2]     STAA  3,X
+  437:  	((unsigned char *) txPt)[4] = (unsigned char) frame_id;
+  0031 e68e         [3]     LDAB  14,SP
+  0033 6b04         [2]     STAB  4,X
+  438:  	((unsigned char *) txPt)[5] = (unsigned char) (address & 0xFF00) >> 8;
+  0035 6905         [2]     CLR   5,X
+  439:  	((unsigned char *) txPt)[6] = (unsigned char) (address) & 0xFF;
+  0037 e6f010       [3]     LDAB  16,SP
+  003a 6b06         [2]     STAB  6,X
+  440:  	txPt->options = options;
+  003c e68d         [3]     LDAB  13,SP
+  003e 6b07         [2]     STAB  7,X
+  441:  	memcpy(txPt->data, data, data_len);
+  0040 1a08         [2]     LEAX  8,X
+  0042 34           [2]     PSHX  
+  0043 ec8d         [3]     LDD   13,SP
+  0045 3b           [2]     PSHD  
+  0046 e684         [3]     LDAB  4,SP
+  0048 b714         [1]     SEX   B,D
+  004a 160000       [4]     JSR   memcpy
+  004d 1b84         [2]     LEAS  4,SP
+  442:  	
+  443:  	// To calculate checksum: Not including frame delimiters and length, add all bytes
+  444:  	//keeping only the lowest 8 bits of the result and subtract from 0xFF.
+  445:  	
+  446:  	checksum += ( (unsigned char *) txPt)[3] & 0xff;
+  004f ee83         [3]     LDX   3,SP
+  0051 e603         [3]     LDAB  3,X
+  0053 87           [1]     CLRA  
+  0054 e381         [3]     ADDD  1,SP
+  0056 6c81         [2]     STD   1,SP
+  447:  	for (i = 4; i < data_len + 8; i++) {
+  0058 c604         [1]     LDAB  #4
+  005a 87           [1]     CLRA  
+  005b 6c85         [2]     STD   5,SP
+  005d 2012         [3]     BRA   *+20 ;abs = 0071
+  448:  		checksum += ( (unsigned char *) txPt)[i] & 0xff;	
+  005f ec83         [3]     LDD   3,SP
+  0061 e385         [3]     ADDD  5,SP
+  0063 b745         [1]     TFR   D,X
+  0065 e600         [3]     LDAB  0,X
+  0067 87           [1]     CLRA  
+  0068 e381         [3]     ADDD  1,SP
+  006a 6c81         [2]     STD   1,SP
+  006c ee85         [3]     LDX   5,SP
+  006e 08           [1]     INX   
+  006f 6e85         [2]     STX   5,SP
+  0071 e680         [3]     LDAB  0,SP
+  0073 b714         [1]     SEX   B,D
+  0075 c30008       [2]     ADDD  #8
+  0078 ac85         [3]     CPD   5,SP
+  007a 22e3         [3/1]   BHI   *-27 ;abs = 005f
+  449:  	} 
+  450:  	checksum &= 0xFF;
+  007c 6981         [2]     CLR   1,SP
+  451:  	checksum = 0xFF - checksum;
+  007e 3b           [2]     PSHD  
+  007f c6ff         [1]     LDAB  #255
+  0081 87           [1]     CLRA  
+  0082 a383         [3]     SUBD  3,SP
+  0084 6c83         [2]     STD   3,SP
+  452:  		
+  453:  	((char *)txPt)[data_len + 8] = checksum;
+  0086 3a           [3]     PULD  
+  0087 e383         [3]     ADDD  3,SP
+  0089 b745         [1]     TFR   D,X
+  008b e682         [3]     LDAB  2,SP
+  008d 6b00         [2]     STAB  0,X
+  454:  	
+  455:  	if (Serial_WriteQ(xbee.port, (unsigned char *) txPt, data_len + 9) < 0) return -1;
+  008f fc0000       [3]     LDD   xbee
+  0092 3b           [2]     PSHD  
+  0093 ec85         [3]     LDD   5,SP
+  0095 3b           [2]     PSHD  
+  0096 e684         [3]     LDAB  4,SP
+  0098 b714         [1]     SEX   B,D
+  009a c30009       [2]     ADDD  #9
+  009d 160000       [4]     JSR   Serial_WriteQ
+  00a0 1b84         [2]     LEAS  4,SP
+  00a2 8c0000       [2]     CPD   #0
+  00a5 2c05         [3/1]   BGE   *+7 ;abs = 00ac
+  00a7 ccffff       [2]     LDD   #65535
+  00aa 203f         [3]     BRA   *+65 ;abs = 00eb
+  456:  
+  457:  	//Queue into ACK waitlist
+  458:  	ack = (xbAckQEntry *) malloc(sizeof(xbAckQEntry));
+  00ac c608         [1]     LDAB  #8
+  00ae 87           [1]     CLRA  
+  00af 160000       [4]     JSR   malloc
+  00b2 6c87         [2]     STD   7,SP
+  459:  	if (!ack) {
+  00b4 2604         [3/1]   BNE   *+6 ;abs = 00ba
+  460:  		return MALLOC_FAIL;
+  00b6 c603         [1]     LDAB  #3
+  00b8 2030         [3]     BRA   *+50 ;abs = 00ea
+  461:  	}
+  462:  	ack->frame_id = frame_id;
+  00ba e68e         [3]     LDAB  14,SP
+  00bc b715         [1]     SEX   B,X
+  00be ed87         [3]     LDY   7,SP
+  00c0 6e40         [2]     STX   0,Y
+  463:  	ack->qtime = clock();
+  00c2 160000       [4]     JSR   clock
+  00c5 ed87         [3]     LDY   7,SP
+  00c7 6c44         [2]     STD   4,Y
+  00c9 6e42         [2]     STX   2,Y
+  464:  	ack->packet = txPt;
+  00cb ec83         [3]     LDD   3,SP
+  00cd 6c46         [2]     STD   6,Y
+  465:  	
+  466:  	QPut(&txackQ, ack);
+  00cf cc0000       [2]     LDD   #txackQ
+  00d2 3b           [2]     PSHD  
+  00d3 b764         [1]     TFR   Y,D
+  00d5 160000       [4]     JSR   QPut
+  467:  	
+  468:  	xbee.statistics.messagesSent++;
+  00d8 fe0000       [3]     LDX   xbee:5
+  00db 08           [1]     INX   
+  00dc 7e0000       [3]     STX   xbee:5
+  469:  	xbee.statistics.dataBytesSent += data_len;
+  00df e6a1         [3]     LDAB  2,+SP
+  00e1 b714         [1]     SEX   B,D
+  00e3 f30000       [3]     ADDD  xbee:7
+  00e6 7c0000       [3]     STD   xbee:7
+  470:  	
+  471:  	
+  472:  	return OK;
+  00e9 c7           [1]     CLRB  
+  00ea 87           [1]     CLRA  
+  473:  }
+  00eb 1b89         [2]     LEAS  9,SP
+  00ed 3d           [5]     RTS   
+  474:  
+  475:  

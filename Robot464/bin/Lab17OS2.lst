@@ -1,0 +1,466 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename **********Lab17OS.C***********
+    2:  // Operating System
+    3:  // This example accompanies the book
+    4:  //    "Embedded Microcomputer Systems: Real Time Interfacing", Brooks-Cole, copyright (c) 2000,
+    5:  //    Jonathan W. Valvano 10/12/04, valvano@mail.utexas.edu
+    6:  
+    7:  // Interface between the TExaS simulator running a 9S12C32
+    8:  //      and the Metrowerks CW12 complier 
+    9:  // TExaS Copyright 2004 by Jonathan W. Valvano 
+   10:  
+   11:  // You may use, edit, run or distribute this file 
+   12:  //    as long as the above copyright notices remain
+   13:  
+   14:  #include <mc9s12c32.h>  /* derivative information */
+   15:  #include "Lab17.h"   // global constants
+   16:  #include "Lab17OS.h"
+   17:  #include "debug.h"
+   18:  /****************warning*********************
+   19:   *** when changing this structure,        ***
+   20:   *** make sure CCR,RegB,RegA,RegX,RegY,PC *** 
+   21:   *** fields are continguous!!             ***
+   22:   *******************************************/
+   23:  struct	TCB{
+   24:    struct TCB *Next;             // Link to Next TCB
+   25:    unsigned char *StackPt;       // Stack Pointer
+   26:    unsigned char Id;             // 1, 2, 4, ...    
+   27:    unsigned char MoreStack[100]; // additional stack 
+   28:    unsigned char InitialCCR; 
+   29:    unsigned char InitialRegB;
+   30:    unsigned char InitialRegA;          
+   31:    unsigned short InitialRegX;           
+   32:    unsigned short InitialRegY;     
+   33:    void (*InitialPC)(void); 
+   34:  };
+   35:  typedef struct TCB TCBType;
+   36:  typedef TCBType * TCBPtr;
+   37:  TCBType SystemTCB[MAX_THREADS];
+   38:  unsigned short static NumThread=0; // number of threads
+   39:   
+   40:  TCBPtr RunPt;  // Pointer to thread currently running 
+   41:  unsigned short static TimeSlice;
+   42:  // ******** OS_RunId ************
+   43:  // determine which foregound thread is running 
+   44:  // input:  none
+   45:  // output: the Id of the Running thread
+   46:  unsigned char OS_RunId(void){
+*** EVALUATION ***
+
+Function: OS_RunId
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+   47:    return(RunPt->Id);
+  0000 fe0000       [3]     LDX   RunPt
+  0003 e604         [3]     LDAB  4,X
+   48:  }
+  0005 3d           [5]     RTS   
+   49:  
+   50:  // ******** OS_InitSemaphore ************
+   51:  // initialize semaphore 
+   52:  // input:  pointer to a semaphore
+   53:  // output: 1 if successful, 0 if not successful
+   54:  short OS_InitSemaphore(Sema4Type *semaPt, short value){ 
+*** EVALUATION ***
+
+Function: OS_InitSemaphore
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+   55:    semaPt->Counter = value ; 
+  0000 ee82         [3]     LDX   2,SP
+  0002 6c00         [2]     STD   0,X
+   56:    return 1;
+  0004 c601         [1]     LDAB  #1
+  0006 87           [1]     CLRA  
+   57:  }  
+  0007 3d           [5]     RTS   
+   58:  
+   59:  // ******** OS_Wait ************
+   60:  // decrement semaphore and spin if less than zero
+   61:  // input:  pointer to a semaphore
+   62:  // output: none
+   63:  void OS_Wait(Sema4Type *semaPt){ 
+*** EVALUATION ***
+
+Function: OS_Wait
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   64:    SETBIT(PTT,3);  // for profiling
+  0001 1c000008     [4]     BSET  _PTT,#8
+   65:    asm sei      // Test and set is atomic
+   66:    while(semaPt->Counter <= 0){  // disabled 
+  0005 2003         [3]     BRA   *+5 ;abs = 000a
+   67:      asm cli             // disabled 
+  0007 10ef         [1]     CLI   
+   68:      asm nop             // enabled  
+  0009 a7           [1]     NOP   
+   69:      asm sei             // enabled
+  000a 1410         [1]     SEI   
+  000c ee80         [3]     LDX   0,SP
+  000e ed00         [3]     LDY   0,X
+  0010 2ff5         [3/1]   BLE   *-9 ;abs = 0007
+   70:  // make an OS function and call it from here
+   71:  //    TC3=TCNT+15;  // add for cooperative multitasking
+   72:    }
+   73:    (semaPt->Counter)--;     // disabled 
+  0012 03           [1]     DEY   
+  0013 6d00         [2]     STY   0,X
+   74:    asm cli                  // disabled 
+  0015 10ef         [1]     CLI   
+   75:    CLRBIT(PTT,3);           // for profiling
+  0017 1d000008     [4]     BCLR  _PTT,#8
+   76:  }                          // enabled 
+  001b 3a           [3]     PULD  
+  001c 3d           [5]     RTS   
+   77:  
+   78:  // ******** OS_Signal ************
+   79:  // increment semaphore 
+   80:  // input:  pointer to a semaphore
+   81:  // output: none
+   82:  void OS_Signal(Sema4Type *semaPt){ 
+*** EVALUATION ***
+
+Function: OS_Signal
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  0000 6cad         [2]     STD   3,-SP
+   83:  unsigned char SaveCCR;
+   84:    SETBIT(PTT,4);     // for profiling
+  0002 1c000010     [4]     BSET  _PTT,#16
+   85:    asm tpa            // previous interrupt enable 
+  0006 b720         [1]     TPA   
+   86:    asm staa SaveCCR   // save previous 
+  0008 6a82         [2]     STAA  2,SP
+   87:    asm sei            // make atomic 
+  000a 1410         [1]     SEI   
+   88:    (semaPt->Counter)++;
+  000c ee80         [3]     LDX   0,SP
+  000e ed00         [3]     LDY   0,X
+  0010 02           [1]     INY   
+  0011 6d00         [2]     STY   0,X
+   89:    asm ldaa SaveCCR   // recall previous 
+  0013 a682         [3]     LDAA  2,SP
+   90:    asm tap            // end critical section 
+  0015 b702         [1]     TAP   
+   91:    CLRBIT(PTT,4);     // for profiling
+  0017 1d000010     [4]     BCLR  _PTT,#16
+   92:  }
+  001b 1b83         [2]     LEAS  3,SP
+  001d 3d           [5]     RTS   
+   93:  
+   94:  Sema4Type DataAvailable;    // Semaphore counting data in DataFifo
+   95:  unsigned short static *DataPutPt;  // Pointer of where to put next 
+   96:  unsigned short static *DataGetPt;  // Pointer of where to get next 
+   97:  // FIFO is empty when DataAvailable is less than or equal to zero 
+   98:  // FIFO is full  when DataRoomLeft is less than or equal to zero 
+   99:  unsigned short static DataFifo[DATAFIFOSIZE];   // statically allocated fifo 
+  100:  
+  101:  //******** OS_OpenDataChannel *************** 
+  102:  // Initialize data transfer channel
+  103:  // inputs:  none
+  104:  // outputs: none
+  105:  void OS_OpenDataChannel(void){
+*** EVALUATION ***
+
+Function: OS_OpenDataChannel
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  106:    OS_InitSemaphore(&DataAvailable, 0);  // Initially empty
+  0000 cc0000       [2]     LDD   #DataAvailable
+  0003 3b           [2]     PSHD  
+  0004 c7           [1]     CLRB  
+  0005 87           [1]     CLRA  
+  0006 0700         [4]     BSR   OS_InitSemaphore
+  0008 3a           [3]     PULD  
+  107:    DataPutPt = DataGetPt = &DataFifo[0];
+  0009 180300000000 [5]     MOVW  #DataFifo,DataGetPt
+  000f fc0000       [3]     LDD   DataGetPt
+  0012 7c0000       [3]     STD   DataPutPt
+  108:  }
+  0015 3d           [5]     RTS   
+  109:  
+  110:  //******** OS_SendData *************** 
+  111:  // enter 16-bit data into the DataFifo 
+  112:  // called from background, so does not wait if full
+  113:  // inputs:  16-bit data
+  114:  // outputs: 0 if data is lost, 1 if successful
+  115:  short OS_SendData(unsigned short data){ 
+*** EVALUATION ***
+
+Function: OS_SendData
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  116:  // must be atomic if more than one producer
+  117:  // but since there is only one producer, there is no critical section
+  118:  unsigned short *tempPt;  
+  119:    SETBIT(PTT,0);       // for profiling
+  0001 1c000001     [4]     BSET  _PTT,#1
+  120:    tempPt = DataPutPt;
+  121:    *tempPt = data;        // Try to Put data into fifo
+  0005 fe0000       [3]     LDX   DataPutPt
+  0008 6c31         [2]     STD   2,X+
+  122:    tempPt++;              // place to Put next
+  000a 6e80         [2]     STX   0,SP
+  123:    if(tempPt == &DataFifo[DATAFIFOSIZE]){ // need to wrap?
+  000c 8e0000       [2]     CPX   #DataFifo:8
+  000f 2605         [3/1]   BNE   *+7 ;abs = 0016
+  124:      tempPt = &DataFifo[0];
+  0011 cc0000       [2]     LDD   #DataFifo
+  0014 6c80         [2]     STD   0,SP
+  125:    }
+  126:    if(tempPt == DataGetPt){
+  0016 fc0000       [3]     LDD   DataGetPt
+  0019 ac80         [3]     CPD   0,SP
+  001b 2607         [3/1]   BNE   *+9 ;abs = 0024
+  127:      CLRBIT(PTT,0);       // for profiling
+  001d 1d000001     [4]     BCLR  _PTT,#1
+  128:      return(0);             // Failed, fifo was full 
+  0021 c7           [1]     CLRB  
+  0022 2010         [3]     BRA   *+18 ;abs = 0034
+  129:    }     
+  130:    DataPutPt = tempPt;        // Success, so update pointer
+  0024 ec80         [3]     LDD   0,SP
+  0026 7c0000       [3]     STD   DataPutPt
+  131:    OS_Signal(&DataAvailable); // increment only if data actually stored
+  0029 cc0000       [2]     LDD   #DataAvailable
+  002c 0700         [4]     BSR   OS_Signal
+  132:    CLRBIT(PTT,0);           // for profiling
+  002e 1d000001     [4]     BCLR  _PTT,#1
+  133:    return(1);
+  0032 c601         [1]     LDAB  #1
+  0034 87           [1]     CLRA  
+  134:  }
+  0035 30           [3]     PULX  
+  0036 3d           [5]     RTS   
+  135:  
+  136:  //******** OS_ReceiveData *************** 
+  137:  // Get a 16-bit data from the DataFifo
+  138:  // called from the foreground
+  139:  // Will wait if the DataFifo is empty
+  140:  // Inputs: none
+  141:  // Outputs: data
+  142:  unsigned short OS_ReceiveData(void){ unsigned short data;  
+*** EVALUATION ***
+
+Function: OS_ReceiveData
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  143:    SETBIT(PTT,1);       // for profiling
+  0001 1c000002     [4]     BSET  _PTT,#2
+  144:    OS_Wait(&DataAvailable);
+  0005 cc0000       [2]     LDD   #DataAvailable
+  0008 160000       [4]     JSR   OS_Wait
+  145:  // must be atomic if more than one consumer
+  146:    data = (*DataGetPt);  // remove data 
+  000b ecfb0000     [6]     LDD   [DataGetPt,PCR]
+  000f 6c80         [2]     STD   0,SP
+  147:    DataGetPt++;          // Place to Put next
+  0011 fe0000       [3]     LDX   DataGetPt
+  0014 1a02         [2]     LEAX  2,X
+  0016 7e0000       [3]     STX   DataGetPt
+  148:    if (DataGetPt == &DataFifo[DATAFIFOSIZE]){
+  0019 8e0000       [2]     CPX   #DataFifo:8
+  001c 2606         [3/1]   BNE   *+8 ;abs = 0024
+  149:      DataGetPt = &DataFifo[0];
+  001e 180300000000 [5]     MOVW  #DataFifo,DataGetPt
+  150:    }
+  151:    CLRBIT(PTT,1);       // for profiling
+  0024 1d000002     [4]     BCLR  _PTT,#2
+  152:    return(data);
+  153:  }
+  0028 30           [3]     PULX  
+  0029 3d           [5]     RTS   
+  154:  
+  155:  #define INTR_ON() asm cli
+  156:  //******** threadSwitch *************** 
+  157:  // decides which thread to run next
+  158:  // add blocking, killing, sleeping here
+  159:  // do NOT add input/output parameters
+  160:  // can add local variables to this function
+  161:  // Inputs: none
+  162:  // Outputs: none
+  163:  void threadSwitch(void){ // do most of the work here
+*** EVALUATION ***
+
+Function: threadSwitch
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  164:    INTR_ON();
+  0000 10ef         [1]     CLI   
+  165:    RunPt = RunPt->Next;
+  0002 eefb0000     [6]     LDX   [RunPt,PCR]
+  0006 7e0000       [3]     STX   RunPt
+  166:  #if DEBUG
+  167:    PTM = RunPt->Id;     // PTM shows which thread is running
+  0009 e604         [3]     LDAB  4,X
+  000b 7b0000       [3]     STAB  _PTM
+  168:  #endif
+  169:  }
+  000e 3d           [5]     RTS   
+  170:  
+  171:  /****************warning************************
+  172:   *** when changing ThreadSwitch, make sure   ***
+  173:   *** the compiler doesn't allocate anything  *** 
+  174:   *** on the stack. Look at LST file!!        ***
+  175:   *** don't add any local variables           ***
+  176:   **********************************************/
+  177:  interrupt 11 void threadSwitchISR(void){
+*** EVALUATION ***
+
+Function: threadSwitchISR
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  178:  asm ldx RunPt			 
+  0000 fe0000       [3]     LDX   RunPt
+  179:  asm sts 2,x
+  0003 6f02         [2]     STS   2,X
+  180:    threadSwitch();
+  0005 0700         [4]     BSR   threadSwitch
+  181:    TC3 = TCNT+TimeSlice;  // Thread runs for a unit of time 
+  0007 dc00         [3]     LDD   _TCNT
+  0009 f30000       [3]     ADDD  TimeSlice
+  000c 5c00         [2]     STD   _TC3
+  182:    TFLG1 = 0x08;          // acknowledge by clearing TC3F 
+  000e c608         [1]     LDAB  #8
+  0010 5b00         [2]     STAB  _TFLG1
+  183:  asm ldx RunPt
+  0012 fe0000       [3]     LDX   RunPt
+  184:  asm lds 2,x
+  0015 ef02         [3]     LDS   2,X
+  185:  }
+  0017 0b           [8]     RTI   
+  186:  
+  187:  
+  188:  //******** OS_AddThread *************** 
+  189:  // add a foregound thread to the scheduler
+  190:  // Inputs: pointer to a void/void foreground function
+  191:  // Outputs: 1 if successful, 0 if this thread can not be added
+  192:  short OS_AddThread(void(*fp)(void)){
+*** EVALUATION ***
+
+Function: OS_AddThread
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  193:    if(NumThread >= MAX_THREADS){ 
+  0001 fc0000       [3]     LDD   NumThread
+  0004 8c0003       [2]     CPD   #3
+  0007 2504         [3/1]   BCS   *+6 ;abs = 000d
+  194:      return 0;  // structure is full
+  0009 c7           [1]     CLRB  
+  000a 87           [1]     CLRA  
+  000b 2048         [3]     BRA   *+74 ;abs = 0055
+  195:    }
+  196:    if(NumThread){
+  000d 04440d       [3]     TBEQ  D,*+16 ;abs = 001d
+  197:      SystemTCB[NumThread-1].Next=&SystemTCB[NumThread]; // Pointer to Next  
+  0010 cd0072       [2]     LDY   #114
+  0013 13           [3]     EMUL  
+  0014 b745         [1]     TFR   D,X
+  0016 c30000       [2]     ADDD  #SystemTCB
+  0019 6ce20000     [3]     STD   SystemTCB:-114,X
+  198:    }
+  199:    SystemTCB[NumThread].StackPt = &SystemTCB[NumThread].InitialCCR; // set SP
+  001d fd0000       [3]     LDY   NumThread
+  0020 c672         [1]     LDAB  #114
+  0022 87           [1]     CLRA  
+  0023 13           [3]     EMUL  
+  0024 b745         [1]     TFR   D,X
+  0026 c30000       [2]     ADDD  #SystemTCB:105
+  0029 6ce20000     [3]     STD   SystemTCB:2,X
+  200:    SystemTCB[NumThread].Id = 1<<NumThread;         // Id 
+  002d c601         [1]     LDAB  #1
+  002f b60000       [3]     LDAA  NumThread:1
+  0032 160000       [4]     JSR   _BSHL
+  0035 6be20000     [3]     STAB  SystemTCB:4,X
+  201:    SystemTCB[NumThread].InitialCCR = 0x40;         // CCR I bit clear 
+  0039 c640         [1]     LDAB  #64
+  003b 6be20000     [3]     STAB  SystemTCB:105,X
+  202:    SystemTCB[NumThread].InitialPC = fp;            // Initial PC 
+  003f ed80         [3]     LDY   0,SP
+  0041 6de20000     [3]     STY   SystemTCB:112,X
+  203:    SystemTCB[NumThread].Next = &SystemTCB[0];      // Pointer to first 
+  0045 cd0000       [2]     LDY   #SystemTCB
+  0048 6de20000     [3]     STY   SystemTCB,X
+  204:    NumThread++;
+  004c fe0000       [3]     LDX   NumThread
+  004f 08           [1]     INX   
+  0050 7e0000       [3]     STX   NumThread
+  205:    return 1;
+  0053 c601         [1]     LDAB  #1
+  206:  }
+  0055 30           [3]     PULX  
+  0056 3d           [5]     RTS   
+  207:  
+  208:  //******** OS_Launch *************** 
+  209:  // start the scheduler
+  210:  // Inputs: number of E clock cycles for each time slice
+  211:  // Outputs: none (does not return)
+  212:  void OS_Launch(unsigned short theTimeSlice){
+*** EVALUATION ***
+
+Function: OS_Launch
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\Lab17OS2.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab17OS2.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  213:  #if DEBUG
+  214:    DDRM = 0x3F;  // for debugging
+  0001 ccff3f       [2]     LDD   #65343
+  0004 7b0000       [3]     STAB  _DDRM
+  215:    DDRT = 0xFF;
+  0007 7a0000       [3]     STAA  _DDRT
+  216:  #endif
+  217:    TimeSlice = theTimeSlice;   // user specifies time slice
+  000a ee80         [3]     LDX   0,SP
+  000c 7e0000       [3]     STX   TimeSlice
+  218:    RunPt = &SystemTCB[0];      // Specify first thread to run 
+  000f 180300000000 [5]     MOVW  #SystemTCB,RunPt
+  219:  asm  sei
+  0015 1410         [1]     SEI   
+  220:    TIOS |= 0x08;    // activate OC3
+  0017 4c0008       [4]     BSET  _TIOS,#8
+  221:    TSCR1 = 0x80;    // enable TCNT
+  001a c680         [1]     LDAB  #128
+  001c 5b00         [2]     STAB  _TSCR1
+  222:    TIE = 0x08;      // Arm TC3 
+  001e c608         [1]     LDAB  #8
+  0020 5b00         [2]     STAB  _TIE
+  223:    TC3 = TCNT+TIMESLICE; 
+  0022 dc00         [3]     LDD   _TCNT
+  0024 c30fa0       [2]     ADDD  #4000
+  0027 5c00         [2]     STD   _TC3
+  224:    TFLG1 = 0x08;    // Clear C3F 
+  0029 c608         [1]     LDAB  #8
+  002b 5b00         [2]     STAB  _TFLG1
+  225:  #if DEBUG
+  226:    PTM = RunPt->Id;
+  002d fe0000       [3]     LDX   RunPt
+  0030 a604         [3]     LDAA  4,X
+  0032 7a0000       [3]     STAA  _PTM
+  227:  #endif
+  228:  asm ldx RunPt
+  0035 fe0000       [3]     LDX   RunPt
+  229:  asm lds 2,x
+  0038 ef02         [3]     LDS   2,X
+  230:  asm rti     // Launch First Thread 
+  003a 0b           [8]     RTI   
+  231:  }
+  003b 3a           [3]     PULD  
+  003c 3d           [5]     RTS   
+  232:  

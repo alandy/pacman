@@ -1,0 +1,131 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include <mc9s12dp512.h>     /* derivative information */
+    2:  
+    3:  
+    4:  unsigned short static volatile Count0;
+    5:  interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
+*** EVALUATION ***
+
+Function: TOC0handler
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\OC.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\OC.C.o" -WmsgSd1106
+
+    6:    TFLG1 = 0x01;         // acknowledge OC0
+  0000 c601         [1]     LDAB  #1
+  0002 5b00         [2]     STAB  _TFLG1
+    7:    Count0++;
+  0004 fe0000       [3]     LDX   Count0
+  0007 08           [1]     INX   
+  0008 7e0000       [3]     STX   Count0
+    8:    TC0 = TC0+10000;      // 10 ms
+  000b dc00         [3]     LDD   _TC0
+  000d c32710       [2]     ADDD  #10000
+  0010 5c00         [2]     STD   _TC0
+    9:    PTT ^= 0x01;          // debugging monitor
+  0012 f60000       [3]     LDAB  _PTT
+  0015 c801         [1]     EORB  #1
+  0017 7b0000       [3]     STAB  _PTT
+   10:  }
+  001a 0b           [8]     RTI   
+   11:  
+   12:  //---------------------OC_Init0---------------------
+   13:  // arm output compare 0 for 100Hz periodic interrupt
+   14:  // Input: none
+   15:  // Output: none 
+   16:  void OC_Init0(){
+*** EVALUATION ***
+
+Function: OC_Init0
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\OC.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\OC.C.o" -WmsgSd1106
+
+   17:    Count0 = 0;     // debugging monitor
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 7c0000       [3]     STD   Count0
+   18:    DDRT |= 0x01;   // debugging monitor
+  0005 1c000001     [4]     BSET  _DDRT,#1
+   19:    TIOS |= 0x01;   // activate TC0 as output compare
+  0009 4c0001       [4]     BSET  _TIOS,#1
+   20:    TIE  |= 0x01;   // arm OC0
+  000c 4c0001       [4]     BSET  _TIE,#1
+   21:    TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
+  000f c680         [1]     LDAB  #128
+  0011 5b00         [2]     STAB  _TSCR1
+   22:    TSCR2 = 0x03;   // divide by 8 TCNT prescale, TOI disarm
+  0013 c603         [1]     LDAB  #3
+  0015 5b00         [2]     STAB  _TSCR2
+   23:    PACTL = 0;      // timer prescale used for TCNT
+  0017 5a00         [2]     STAA  _PACTL
+   24:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) set TCNT period
+   25:      divide  FastMode(24MHz)    Slow Mode (8MHz)
+   26:  000   1     42ns  TOF  2.73ms  125ns TOF  8.192ms
+   27:  001   2     84ns  TOF  5.46ms  250ns TOF 16.384ms 
+   28:  010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms     
+   29:  011   8    333ns  TOF  21.8ms    1us TOF 65.536ms
+   30:  100  16    667ns  TOF  43.7ms    2us TOF 131.072ms
+   31:  101  32   1.33us  TOF  87.4ms    4us TOF 262.144ns
+   32:  110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
+   33:  111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s */
+   34:    TC0    = TCNT+50; // first interrupt right away
+  0019 de00         [3]     LDX   _TCNT
+  001b 1ae032       [2]     LEAX  50,X
+  001e 5e00         [2]     STX   _TC0
+   35:  }
+  0020 3d           [5]     RTS   
+   36:  
+   37:  unsigned short static volatile Count3;
+   38:  interrupt 11 void TOC3handler(void){ // executes at 1000 Hz 
+*** EVALUATION ***
+
+Function: TOC3handler
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\OC.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\OC.C.o" -WmsgSd1106
+
+   39:    TFLG1 = 0x08;         // acknowledge OC3
+  0000 c608         [1]     LDAB  #8
+  0002 5b00         [2]     STAB  _TFLG1
+   40:    Count3++;
+  0004 fe0000       [3]     LDX   Count3
+  0007 08           [1]     INX   
+  0008 7e0000       [3]     STX   Count3
+   41:    TC3 = TC3+1000;       // 1 ms
+  000b dc00         [3]     LDD   _TC3
+  000d c303e8       [2]     ADDD  #1000
+  0010 5c00         [2]     STD   _TC3
+   42:    PTT ^= 0x08;          // debugging monitor
+  0012 f60000       [3]     LDAB  _PTT
+  0015 c808         [1]     EORB  #8
+  0017 7b0000       [3]     STAB  _PTT
+   43:  }
+  001a 0b           [8]     RTI   
+   44:  
+   45:  //---------------------OC_Init3---------------------
+   46:  // arm output compare 3 for 1000Hz periodic interrupt
+   47:  // Input: none    assumes another ritual enabled the TCNT
+   48:  // Output: none 
+   49:  void OC_Init3(){
+*** EVALUATION ***
+
+Function: OC_Init3
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\OC.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\OC.C.o" -WmsgSd1106
+
+   50:    Count3 = 0;      // debugging monitor      
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 7c0000       [3]     STD   Count3
+   51:    DDRT |= 0x08;    // debugging monitor
+  0005 1c000008     [4]     BSET  _DDRT,#8
+   52:    TIOS |= 0x08;    // activate TC3 as output compare
+  0009 4c0008       [4]     BSET  _TIOS,#8
+   53:    TIE  |= 0x08;    // arm OC3
+  000c 4c0008       [4]     BSET  _TIE,#8
+   54:    TC3   = TCNT+50; // first interrupt right away
+  000f de00         [3]     LDX   _TCNT
+  0011 1ae032       [2]     LEAX  50,X
+  0014 5e00         [2]     STX   _TC3
+   55:  }
+  0016 3d           [5]     RTS   

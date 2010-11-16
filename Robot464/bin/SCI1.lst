@@ -1,0 +1,620 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // filename  ***************  SCI1.C ****************************** 
+    2:  // Simple I/O routines to 9S12DP512 serial port   
+    3:  // Jonathan W. Valvano 8/10/09
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //        Thompson, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+    9:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   10:  
+   11:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  // Modified by EE345L students Charlie Gough && Matt Hawk
+   15:  // Modified by EE345M students Agustinus Darmawan + Mingjie Qiu
+   16:  
+   17:  // If you want to communicate from one 9S12DP512 to another, then you can build the following 4-pin 
+   18:  // cable to connect the RS232 SCI1 ports between the two 9S12 systems. 
+   19:  // You would need two 4-pin female headers (All Electronics part number CON-244)
+   20:  // 9S12 Computer 1                                             9S12 Computer 2
+   21:  //   1 RxD ------ black ------------------------- yellow ------  3 TxD
+   22:  //   2 Ground --- green ------------------------- green -------  2 Ground
+   23:  //   3 TxD 	----- yellow ------------------------ black -------  1 RxD
+   24:  //   4 NC                                                        4 NC
+   25:  
+   26:  // If you wish to connect SCI1 to a personal computer, you could build this cable. 
+   27:  // You would need a 4-pin female header (All Electronics part number CON-244) and 
+   28:  // a 9-pin female DP9 header (All Electronic part number DB-9S). 
+   29:  // Three wires must be connected in the cable, they are:
+   30:  // 9S12 J2                                           COM port on a PC
+   31:  //   1 RxD ------------------------------------------   3 TxD
+   32:  //   2 Ground ---------------------------------------   5 Ground
+   33:  //   3 TxD 	------------------------------------------  2 RxD
+   34:   
+   35:  #include <mc9s12dp512.h>     /* derivative information */
+   36:  #include "SCI1.h"
+   37:  #define RDRF 0x20   // Receive Data Register Full Bit
+   38:  #define TDRE 0x80   // Transmit Data Register Empty Bit
+   39:  
+   40:  //-------------------------SCI1_Init------------------------
+   41:  // Initialize Serial port SCI1
+   42:  // Input: baudRate is tha baud rate in bits/sec
+   43:  // Output: none
+   44:  // assumes a module clock frequency of 24 MHz
+   45:  void SCI1_Init(unsigned long baudRate){
+*** EVALUATION ***
+
+Function: SCI1_Init
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 6caa         [2]     STD   6,-SP
+  0002 34           [2]     PSHX  
+   46:  unsigned long br;
+   47:    SCI1BDH = 0;   
+  0003 790000       [3]     CLR   _SCI1BD
+   48:    br=(1500000+baudRate/2)/baudRate; // MCLK/(16*baudRate) 
+  0006 b7c5         [1]     EXG   D,X
+  0008 49           [1]     LSRD  
+  0009 b7c5         [1]     EXG   D,X
+  000b 46           [1]     RORA  
+  000c 56           [1]     RORB  
+  000d c3e360       [2]     ADDD  #58208
+  0010 b7c5         [1]     EXG   D,X
+  0012 c916         [1]     ADCB  #22
+  0014 8900         [1]     ADCA  #0
+  0016 ed82         [3]     LDY   2,SP
+  0018 35           [2]     PSHY  
+  0019 ed82         [3]     LDY   2,SP
+  001b 35           [2]     PSHY  
+  001c b7c5         [1]     EXG   D,X
+  001e 160000       [4]     JSR   _LDIVU
+  0021 6c86         [2]     STD   6,SP
+  0023 6e84         [2]     STX   4,SP
+   49:    SCI1BDL= (unsigned char) br; 
+  0025 e687         [3]     LDAB  7,SP
+  0027 5b00         [2]     STAB  _SCI1BD:1
+   50:    SCI1CR1 = 0;
+  0029 790000       [3]     CLR   _SCI1CR1
+   51:  /* bit value meaning
+   52:      7   0    LOOPS, no looping, normal
+   53:      6   0    WOMS, normal high/low outputs
+   54:      5   0    RSRC, not appliable with LOOPS=0
+   55:      4   0    M, 1 start, 8 data, 1 stop
+   56:      3   0    WAKE, wake by idle (not applicable)
+   57:      2   0    ILT, short idle time (not applicable)
+   58:      1   0    PE, no parity
+   59:      0   0    PT, parity type (not applicable with PE=0) */ 
+   60:    SCI1CR2 = 0x0C; 
+  002c c60c         [1]     LDAB  #12
+  002e 5b00         [2]     STAB  _SCI1CR2
+   61:  /* bit value meaning
+   62:      7   0    TIE, no transmit interrupts on TDRE
+   63:      6   0    TCIE, no transmit interrupts on TC
+   64:      5   0    RIE, no receive interrupts on RDRF
+   65:      4   0    ILIE, no interrupts on idle
+   66:      3   1    TE, enable transmitter
+   67:      2   1    RE, enable receiver
+   68:      1   0    RWU, no receiver wakeup
+   69:      0   0    SBK, no send break */ 
+   70:  }
+  0030 1b88         [2]     LEAS  8,SP
+  0032 3d           [5]     RTS   
+   71:      
+   72:  //-------------------------SCI1_SetBaud------------------------
+   73:  // Set baud rate
+   74:  // Input: new baud rate in bps
+   75:  // Output: none
+   76:  void SCI1_SetBaud(unsigned long baudRate){
+*** EVALUATION ***
+
+Function: SCI1_SetBaud
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 6caa         [2]     STD   6,-SP
+  0002 34           [2]     PSHX  
+   77:    unsigned long br;
+   78:    SCI1BDH = 0;   
+  0003 790000       [3]     CLR   _SCI1BD
+   79:    br=(1500000+baudRate/2)/baudRate; // MCLK/(16*baudRate) 
+  0006 b7c5         [1]     EXG   D,X
+  0008 49           [1]     LSRD  
+  0009 b7c5         [1]     EXG   D,X
+  000b 46           [1]     RORA  
+  000c 56           [1]     RORB  
+  000d c3e360       [2]     ADDD  #58208
+  0010 b7c5         [1]     EXG   D,X
+  0012 c916         [1]     ADCB  #22
+  0014 8900         [1]     ADCA  #0
+  0016 ed82         [3]     LDY   2,SP
+  0018 35           [2]     PSHY  
+  0019 ed82         [3]     LDY   2,SP
+  001b 35           [2]     PSHY  
+  001c b7c5         [1]     EXG   D,X
+  001e 160000       [4]     JSR   _LDIVU
+  0021 6c86         [2]     STD   6,SP
+  0023 6e84         [2]     STX   4,SP
+   80:    SCI1BDL= (unsigned char) br; 
+  0025 e687         [3]     LDAB  7,SP
+  0027 5b00         [2]     STAB  _SCI1BD:1
+   81:  }
+  0029 1b88         [2]     LEAS  8,SP
+  002b 3d           [5]     RTS   
+   82:  
+   83:      
+   84:  //-------------------------SCI1_InChar------------------------
+   85:  // Wait for new serial port input, busy-waiting synchronization
+   86:  // The input is not echoed
+   87:  // Input: none
+   88:  // Output: ASCII code for key typed
+   89:  char SCI1_InChar(void){
+*** EVALUATION ***
+
+Function: SCI1_InChar
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+   90:    while((SCI1SR1 & RDRF) == 0){};
+  0000 4f0020fc     [4]     BRCLR _SCI1SR1,#32,*+0 ;abs = 0000
+   91:    return(SCI1DRL);
+  0004 d600         [3]     LDAB  _SCI1DRL
+   92:  }
+  0006 3d           [5]     RTS   
+   93:          
+   94:  //-------------------------SCI1_OutChar------------------------
+   95:  // Wait for buffer to be empty, output 8-bit to serial port
+   96:  // busy-waiting synchronization
+   97:  // Input: 8-bit data to be transferred
+   98:  // Output: none
+   99:  void SCI1_OutChar(char data){
+*** EVALUATION ***
+
+Function: SCI1_OutChar
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  100:    while((SCI1SR1 & TDRE) == 0){};
+  0001 4f0080fc     [4]     BRCLR _SCI1SR1,#128,*+0 ;abs = 0001
+  101:    SCI1DRL = data;
+  0005 33           [3]     PULB  
+  0006 5b00         [2]     STAB  _SCI1DRL
+  102:  }
+  0008 3d           [5]     RTS   
+  103:  
+  104:     
+  105:  //-------------------------SCI1_InStatus--------------------------
+  106:  // Checks if new input is ready, TRUE if new input is ready
+  107:  // Input: none
+  108:  // Output: TRUE if a call to InChar will return right away with data
+  109:  //         FALSE if a call to InChar will wait for input
+  110:  char SCI1_InStatus(void){
+*** EVALUATION ***
+
+Function: SCI1_InStatus
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  111:    return(SCI1SR1 & RDRF);
+  0000 d600         [3]     LDAB  _SCI1SR1
+  0002 c420         [1]     ANDB  #32
+  112:  }
+  0004 3d           [5]     RTS   
+  113:  
+  114:  //-----------------------SCI1_OutStatus----------------------------
+  115:  // Checks if output data buffer is empty, TRUE if empty
+  116:  // Input: none
+  117:  // Output: TRUE if a call to OutChar will output and return right away
+  118:  //         FALSE if a call to OutChar will wait for output to be ready
+  119:  char SCI1_OutStatus(void){
+*** EVALUATION ***
+
+Function: SCI1_OutStatus
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  120:    return(SCI1SR1 & TDRE);
+  0000 d600         [3]     LDAB  _SCI1SR1
+  0002 c480         [1]     ANDB  #128
+  121:  }
+  0004 3d           [5]     RTS   
+  122:  
+  123:  
+  124:  //-------------------------SCI1_OutString------------------------
+  125:  // Output String (NULL termination), busy-waiting synchronization
+  126:  // Input: pointer to a NULL-terminated string to be transferred
+  127:  // Output: none
+  128:  void SCI1_OutString(char *pt){
+*** EVALUATION ***
+
+Function: SCI1_OutString
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  129:    while(*pt){
+  0000 b745         [1]     TFR   D,X
+  0002 2005         [3]     BRA   *+7 ;abs = 0009
+  130:      SCI1_OutChar(*pt);
+  0004 34           [2]     PSHX  
+  0005 0700         [4]     BSR   SCI1_OutChar
+  131:      pt++;
+  0007 30           [3]     PULX  
+  0008 08           [1]     INX   
+  0009 e600         [3]     LDAB  0,X
+  000b 26f7         [3/1]   BNE   *-7 ;abs = 0004
+  132:    }
+  133:  }
+  000d 3d           [5]     RTS   
+  134:  
+  135:  //----------------------SCI1_InUDec-------------------------------
+  136:  // InUDec accepts ASCII input in unsigned decimal format
+  137:  //     and converts to a 16 bit unsigned number
+  138:  //     valid range is 0 to 65535
+  139:  // Input: none
+  140:  // Output: 16-bit unsigned number
+  141:  // If you enter a number above 65535, it will truncate without an error
+  142:  // Backspace will remove last digit typed
+  143:  unsigned short SCI1_InUDec(void){	
+*** EVALUATION ***
+
+Function: SCI1_InUDec
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 1b9b         [2]     LEAS  -5,SP
+  144:  unsigned short number=0, length=0;
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c83         [2]     STD   3,SP
+  0006 6c81         [2]     STD   1,SP
+  145:  char character;
+  146:    character = SCI1_InChar();	
+  147:    while(character != CR){ // accepts until <enter> is typed
+  0008 203a         [3]     BRA   *+60 ;abs = 0044
+  148:  // The next line checks that the input is a digit, 0-9.
+  149:  // If the character is not 0-9, it is ignored and not echoed
+  150:      if((character>='0') && (character<='9')) {
+  000a c030         [1]     SUBB  #48
+  000c c109         [1]     CMPB  #9
+  000e 2218         [3/1]   BHI   *+26 ;abs = 0028
+  151:        number = 10*number+(character-'0');   // this line overflows if above 65535
+  0010 e680         [3]     LDAB  0,SP
+  0012 b714         [1]     SEX   B,D
+  0014 830030       [2]     SUBD  #48
+  0017 b745         [1]     TFR   D,X
+  0019 c60a         [1]     LDAB  #10
+  001b 87           [1]     CLRA  
+  001c ed83         [3]     LDY   3,SP
+  001e 13           [3]     EMUL  
+  001f 1ae6         [2]     LEAX  D,X
+  0021 6e83         [2]     STX   3,SP
+  152:        length++;
+  0023 ee81         [3]     LDX   1,SP
+  0025 08           [1]     INX   
+  153:        SCI1_OutChar(character);
+  154:      } 
+  0026 2016         [3]     BRA   *+24 ;abs = 003e
+  155:  // If the input is a backspace, then the return number is
+  156:  // changed and a backspace is outputted to the screen
+  157:      else if((character==BS) && length){
+  0028 e680         [3]     LDAB  0,SP
+  002a c108         [1]     CMPB  #8
+  002c 2616         [3/1]   BNE   *+24 ;abs = 0044
+  002e ee81         [3]     LDX   1,SP
+  0030 2712         [3/1]   BEQ   *+20 ;abs = 0044
+  158:        number /= 10;
+  0032 ec83         [3]     LDD   3,SP
+  0034 ce000a       [2]     LDX   #10
+  0037 1810         [12]    IDIV  
+  0039 6e83         [2]     STX   3,SP
+  159:        length--;
+  003b ee81         [3]     LDX   1,SP
+  003d 09           [1]     DEX   
+  003e 6e81         [2]     STX   1,SP
+  160:        SCI1_OutChar(character);
+  0040 e680         [3]     LDAB  0,SP
+  0042 0700         [4]     BSR   SCI1_OutChar
+  161:      }
+  162:      character = SCI1_InChar();	
+  0044 0700         [4]     BSR   SCI1_InChar
+  0046 6b80         [2]     STAB  0,SP
+  0048 c10d         [1]     CMPB  #13
+  004a 26be         [3/1]   BNE   *-64 ;abs = 000a
+  163:    }
+  164:    return number;
+  004c ec83         [3]     LDD   3,SP
+  165:  }
+  004e 1b85         [2]     LEAS  5,SP
+  0050 3d           [5]     RTS   
+  166:  
+  167:  
+  168:  //-----------------------SCI1_OutUDec-----------------------
+  169:  // Output a 16-bit number in unsigned decimal format
+  170:  // Input: 16-bit number to be transferred
+  171:  // Output: none
+  172:  // Variable format 1-5 digits with no space before or after
+  173:  void SCI1_OutUDec(unsigned short n){
+*** EVALUATION ***
+
+Function: SCI1_OutUDec
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  174:  // This function uses recursion to convert decimal number
+  175:  //   of unspecified length as an ASCII string 
+  176:    if(n >= 10){
+  0001 8c000a       [2]     CPD   #10
+  0004 2512         [3/1]   BCS   *+20 ;abs = 0018
+  177:      SCI1_OutUDec(n/10);
+  0006 ce000a       [2]     LDX   #10
+  0009 1810         [12]    IDIV  
+  000b b754         [1]     TFR   X,D
+  000d 0700         [4]     BSR   SCI1_OutUDec
+  178:      n = n%10;
+  000f ec80         [3]     LDD   0,SP
+  0011 ce000a       [2]     LDX   #10
+  0014 1810         [12]    IDIV  
+  0016 6c80         [2]     STD   0,SP
+  179:    }
+  180:    SCI1_OutChar(n+'0'); /* n is between 0 and 9 */
+  0018 e681         [3]     LDAB  1,SP
+  001a cb30         [1]     ADDB  #48
+  001c 160000       [4]     JSR   SCI1_OutChar
+  181:  }
+  001f 3a           [3]     PULD  
+  0020 3d           [5]     RTS   
+  182:  
+  183:  
+  184:  
+  185:  //---------------------SCI1_InUHex----------------------------------------
+  186:  // Accepts ASCII input in unsigned hexadecimal (base 16) format
+  187:  // Input: none
+  188:  // Output: 16-bit unsigned number
+  189:  // No '$' or '0x' need be entered, just the 1 to 4 hex digits
+  190:  // It will convert lower case a-f to uppercase A-F
+  191:  //     and converts to a 16 bit unsigned number
+  192:  //     value range is 0 to FFFF
+  193:  // If you enter a number above FFFF, it will truncate without an error
+  194:  // Backspace will remove last digit typed
+  195:  unsigned short SCI1_InUHex(void){	
+*** EVALUATION ***
+
+Function: SCI1_InUHex
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 1b99         [2]     LEAS  -7,SP
+  196:  unsigned short number=0, digit, length=0;
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c83         [2]     STD   3,SP
+  0006 6c85         [2]     STD   5,SP
+  197:  char character;
+  198:    character = SCI1_InChar();
+  199:    while(character != CR){	
+  0008 2068         [3]     BRA   *+106 ;abs = 0072
+  200:      digit = 0x10; // assume bad
+  000a c610         [1]     LDAB  #16
+  000c 87           [1]     CLRA  
+  000d 6c81         [2]     STD   1,SP
+  201:      if((character>='0') && (character<='9')){
+  000f e680         [3]     LDAB  0,SP
+  0011 c030         [1]     SUBB  #48
+  0013 c109         [1]     CMPB  #9
+  0015 2209         [3/1]   BHI   *+11 ;abs = 0020
+  202:        digit = character-'0';
+  0017 e680         [3]     LDAB  0,SP
+  0019 b715         [1]     SEX   B,X
+  001b 1ae1d0       [2]     LEAX  -48,X
+  203:      }
+  001e 2020         [3]     BRA   *+34 ;abs = 0040
+  204:      else if((character>='A') && (character<='F')){ 
+  0020 e680         [3]     LDAB  0,SP
+  0022 c041         [1]     SUBB  #65
+  0024 c105         [1]     CMPB  #5
+  0026 2209         [3/1]   BHI   *+11 ;abs = 0031
+  205:        digit = (character-'A')+0xA;
+  0028 e680         [3]     LDAB  0,SP
+  002a b715         [1]     SEX   B,X
+  002c 1ae1c9       [2]     LEAX  -55,X
+  206:      }
+  002f 200f         [3]     BRA   *+17 ;abs = 0040
+  207:      else if((character>='a') && (character<='f')){ 
+  0031 e680         [3]     LDAB  0,SP
+  0033 c061         [1]     SUBB  #97
+  0035 c105         [1]     CMPB  #5
+  0037 2209         [3/1]   BHI   *+11 ;abs = 0042
+  208:        digit = (character-'a')+0xA;
+  0039 e680         [3]     LDAB  0,SP
+  003b b715         [1]     SEX   B,X
+  003d 1ae1a9       [2]     LEAX  -87,X
+  0040 6e81         [2]     STX   1,SP
+  209:      }
+  210:  // If the character is not 0-9 or A-F, it is ignored and not echoed
+  211:      if(digit <= 0xF){	
+  0042 ec81         [3]     LDD   1,SP
+  0044 8c000f       [2]     CPD   #15
+  0047 220f         [3/1]   BHI   *+17 ;abs = 0058
+  212:        number = number*0x10+digit;
+  0049 ec83         [3]     LDD   3,SP
+  004b 59           [1]     LSLD  
+  004c 59           [1]     LSLD  
+  004d 59           [1]     LSLD  
+  004e 59           [1]     LSLD  
+  004f e381         [3]     ADDD  1,SP
+  0051 6c83         [2]     STD   3,SP
+  213:        length++;
+  0053 ee85         [3]     LDX   5,SP
+  0055 08           [1]     INX   
+  214:        SCI1_OutChar(character);
+  215:      }
+  0056 2013         [3]     BRA   *+21 ;abs = 006b
+  216:  // Backspace outputted and return value changed if a backspace is inputted
+  217:      else if((character==BS) && length){
+  0058 e680         [3]     LDAB  0,SP
+  005a c108         [1]     CMPB  #8
+  005c 2614         [3/1]   BNE   *+22 ;abs = 0072
+  005e ee85         [3]     LDX   5,SP
+  0060 2710         [3/1]   BEQ   *+18 ;abs = 0072
+  218:        number /= 0x10;
+  0062 ec83         [3]     LDD   3,SP
+  0064 49           [1]     LSRD  
+  0065 49           [1]     LSRD  
+  0066 49           [1]     LSRD  
+  0067 49           [1]     LSRD  
+  0068 6c83         [2]     STD   3,SP
+  219:        length--;
+  006a 09           [1]     DEX   
+  006b 6e85         [2]     STX   5,SP
+  220:        SCI1_OutChar(character);
+  006d e680         [3]     LDAB  0,SP
+  006f 160000       [4]     JSR   SCI1_OutChar
+  221:      }
+  222:      character = SCI1_InChar();
+  0072 160000       [4]     JSR   SCI1_InChar
+  0075 6b80         [2]     STAB  0,SP
+  0077 c10d         [1]     CMPB  #13
+  0079 268f         [3/1]   BNE   *-111 ;abs = 000a
+  223:    }
+  224:    return number;
+  007b ec83         [3]     LDD   3,SP
+  225:  }
+  007d 1b87         [2]     LEAS  7,SP
+  007f 3d           [5]     RTS   
+  226:  
+  227:  //--------------------------SCI1_OutUHex----------------------------
+  228:  // Output a 16 bit number in unsigned hexadecimal format
+  229:  // Input: 16-bit number to be transferred
+  230:  // Output: none
+  231:  // Variable format 1 to 4 digits with no space before or after
+  232:  void SCI1_OutUHex(unsigned short number){
+*** EVALUATION ***
+
+Function: SCI1_OutUHex
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  233:  // This function uses recursion to convert the number of 
+  234:  //   unspecified length as an ASCII string
+  235:    if(number >= 0x10){
+  0001 8c0010       [2]     CPD   #16
+  0004 250f         [3/1]   BCS   *+17 ;abs = 0015
+  236:      SCI1_OutUHex(number/0x10);
+  0006 49           [1]     LSRD  
+  0007 49           [1]     LSRD  
+  0008 49           [1]     LSRD  
+  0009 49           [1]     LSRD  
+  000a 0700         [4]     BSR   SCI1_OutUHex
+  237:      SCI1_OutUHex(number%0x10);
+  000c ec80         [3]     LDD   0,SP
+  000e c40f         [1]     ANDB  #15
+  0010 87           [1]     CLRA  
+  0011 0700         [4]     BSR   SCI1_OutUHex
+  238:    }
+  0013 2012         [3]     BRA   *+20 ;abs = 0027
+  239:    else{
+  240:      if(number < 0xA){
+  0015 8c000a       [2]     CPD   #10
+  0018 2406         [3/1]   BCC   *+8 ;abs = 0020
+  241:        SCI1_OutChar(number+'0');
+  001a e681         [3]     LDAB  1,SP
+  001c cb30         [1]     ADDB  #48
+  242:       }
+  001e 2004         [3]     BRA   *+6 ;abs = 0024
+  243:      else{
+  244:        SCI1_OutChar((number-0x0A)+'A');
+  0020 e681         [3]     LDAB  1,SP
+  0022 cb37         [1]     ADDB  #55
+  0024 160000       [4]     JSR   SCI1_OutChar
+  245:      }
+  246:    }
+  247:  }
+  0027 3a           [3]     PULD  
+  0028 3d           [5]     RTS   
+  248:  
+  249:  //------------------------SCI1_InString------------------------
+  250:  // Accepts ASCII characters from the serial port
+  251:  //    and adds them to a string until <enter> is typed 
+  252:  //    or until max length of the string is reached.  
+  253:  // It echoes each character as it is inputted.  
+  254:  // If a backspace is inputted, the string is modified 
+  255:  //    and the backspace is echoed
+  256:  // terminates the string with a null character
+  257:  // uses busy-waiting synchronization on RDRF
+  258:  // Input: pointer to empty buffer, size of buffer
+  259:  // Output: Null terminated string
+  260:  // -- Modified by Agustinus Darmawan + Mingjie Qiu --
+  261:  void SCI1_InString(char *bufPt, unsigned short max) {	
+*** EVALUATION ***
+
+Function: SCI1_InString
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\SCI1.C
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI1.C.o" -WmsgSd1106
+
+  0000 6cab         [2]     STD   5,-SP
+  262:  int length=0;
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c82         [2]     STD   2,SP
+  263:  char character;
+  264:    character = SCI1_InChar();
+  265:    while(character != CR){
+  0006 202b         [3]     BRA   *+45 ;abs = 0033
+  266:      if(character == BS){
+  0008 c108         [1]     CMPB  #8
+  000a 2613         [3/1]   BNE   *+21 ;abs = 001f
+  267:        if(length){
+  000c ee82         [3]     LDX   2,SP
+  000e 2723         [3/1]   BEQ   *+37 ;abs = 0033
+  268:          bufPt--;
+  0010 ed87         [3]     LDY   7,SP
+  0012 03           [1]     DEY   
+  0013 6d87         [2]     STY   7,SP
+  269:          length--;
+  0015 09           [1]     DEX   
+  0016 6e82         [2]     STX   2,SP
+  270:          SCI1_OutChar(BS);
+  0018 c608         [1]     LDAB  #8
+  001a 160000       [4]     JSR   SCI1_OutChar
+  271:        }
+  272:      }
+  001d 2014         [3]     BRA   *+22 ;abs = 0033
+  273:      else if(length < max){
+  001f ee82         [3]     LDX   2,SP
+  0021 ae80         [3]     CPX   0,SP
+  0023 240e         [3/1]   BCC   *+16 ;abs = 0033
+  274:        *bufPt = character;
+  0025 ee87         [3]     LDX   7,SP
+  0027 6b30         [2]     STAB  1,X+
+  275:        bufPt++;
+  0029 6e87         [2]     STX   7,SP
+  276:        length++; 
+  002b ee82         [3]     LDX   2,SP
+  002d 08           [1]     INX   
+  002e 6e82         [2]     STX   2,SP
+  277:        SCI1_OutChar(character);
+  0030 160000       [4]     JSR   SCI1_OutChar
+  278:      }
+  279:      character = SCI1_InChar();
+  0033 160000       [4]     JSR   SCI1_InChar
+  0036 6b84         [2]     STAB  4,SP
+  0038 c10d         [1]     CMPB  #13
+  003a 26cc         [3/1]   BNE   *-50 ;abs = 0008
+  280:    }
+  281:    *bufPt = 0;
+  003c ee87         [3]     LDX   7,SP
+  003e 6900         [2]     CLR   0,X
+  282:  }
+  0040 1b85         [2]     LEAS  5,SP
+  0042 3d           [5]     RTS   
+  283:  
+  284:  
+  285:  
+  286:  

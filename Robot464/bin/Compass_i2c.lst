@@ -1,0 +1,133 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // filename ******** Compass_i2c.c **************
+    2:  // A compass driver for the Proteus Robot
+    3:  // Written for Robot-Electronic's CMPS03 compass
+    4:  
+    5:  /** Pin connections **
+    6:      
+    7:      SDA, SCLK
+    8:      
+    9:   ** Feature Usage **
+   10:     
+   11:     On I2C bus
+   12:  */
+   13:  
+   14:  #include <mc9s12dp512.h>     /* derivative information */
+   15:  #include "i2c_master_intr.h"
+   16:  #include "Compass_i2c.h"
+   17:         
+   18:  
+   19:    //i2c driver
+   20:  extern unsigned char newI2cData, I2cTransDone;
+   21:  extern unsigned short I2C1_SndRcvTemp; 
+   22:  unsigned char inBuf[2];
+   23:  //unsigned char compass_heading;
+   24:     
+   25:     
+   26:  /*   
+   27:  unsigned char Compass_read8(){
+   28:    //LED_redOn();
+   29:    return I2C_Recv8(COMPASS_I2C_ADDR, COMPASS_REG8);
+   30:    //LED_redOff();
+   31:  } */
+   32:     
+   33:  unsigned char Compass_read8(){
+*** EVALUATION ***
+
+Function: Compass_read8
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Compass_i2c.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Compass_i2c.c.o" -WmsgSd1106
+
+   34:  
+   35:        
+   36:    while(I2C1_SelectSlave(COMPASS_I2C_ADDR) != ERR_OK);
+  0000 c6c0         [1]     LDAB  #192
+  0002 160000       [4]     JSR   I2C1_SelectSlave
+  0005 0471f8       [3]     TBNE  B,*-5 ;abs = 0000
+   37:  
+   38:    I2cTransDone = 0;
+  0008 790000       [3]     CLR   I2cTransDone
+   39:    while(I2C1_SendChar(COMPASS_REG8) != ERR_OK); //send register to read from
+  000b c601         [1]     LDAB  #1
+  000d 160000       [4]     JSR   I2C1_SendChar
+  0010 0471f8       [3]     TBNE  B,*-5 ;abs = 000b
+   40:  
+   41:  
+   42:    //while(!I2cTransDone){};
+   43:  
+   44:    newI2cData = 0;
+  0013 790000       [3]     CLR   newI2cData
+   45:    I2C1_RecvChar(inBuf);
+  0016 cc0000       [2]     LDD   #inBuf
+  0019 3b           [2]     PSHD  
+  001a c601         [1]     LDAB  #1
+  001c 87           [1]     CLRA  
+  001d 3b           [2]     PSHD  
+  001e cc0000       [2]     LDD   #I2C1_SndRcvTemp
+  0021 160000       [4]     JSR   I2C1_RecvBlock
+  0024 1b84         [2]     LEAS  4,SP
+   46:  
+   47:    
+   48:    while(!newI2cData){};
+  0026 f60000       [3]     LDAB  newI2cData
+  0029 27fb         [3/1]   BEQ   *-3 ;abs = 0026
+   49:  
+   50:  
+   51:    return inBuf[0];
+  002b f60000       [3]     LDAB  inBuf
+   52:  }    
+  002e 3d           [5]     RTS   
+   53:      
+   54:  unsigned short Compass_read16(){
+*** EVALUATION ***
+
+Function: Compass_read16
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\Compass_i2c.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Compass_i2c.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   55:    
+   56:    unsigned short dummy;
+   57:    while(I2C1_SelectSlave(COMPASS_I2C_ADDR) != ERR_OK);
+  0001 c6c0         [1]     LDAB  #192
+  0003 160000       [4]     JSR   I2C1_SelectSlave
+  0006 0471f8       [3]     TBNE  B,*-5 ;abs = 0001
+   58:  
+   59:    while(I2C1_SendChar(COMPASS_REG16) != ERR_OK); //send register to read from
+  0009 c602         [1]     LDAB  #2
+  000b 160000       [4]     JSR   I2C1_SendChar
+  000e 0471f8       [3]     TBNE  B,*-5 ;abs = 0009
+   60:  
+   61:    while(I2C1_SelectSlave(COMPASS_I2C_ADDR + 1) != ERR_OK);
+  0011 c6c1         [1]     LDAB  #193
+  0013 160000       [4]     JSR   I2C1_SelectSlave
+  0016 0471f8       [3]     TBNE  B,*-5 ;abs = 0011
+   62:    
+   63:    while(I2C1_RecvBlock(inBuf, 2, &dummy) != ERR_OK);
+  0019 cc0000       [2]     LDD   #inBuf
+  001c 3b           [2]     PSHD  
+  001d c602         [1]     LDAB  #2
+  001f 87           [1]     CLRA  
+  0020 3b           [2]     PSHD  
+  0021 1a84         [2]     LEAX  4,SP
+  0023 b754         [1]     TFR   X,D
+  0025 160000       [4]     JSR   I2C1_RecvBlock
+  0028 1b84         [2]     LEAS  4,SP
+  002a 0471ec       [3]     TBNE  B,*-17 ;abs = 0019
+   64:  
+   65:    return (inBuf[0] << 8) | inBuf[1];  
+  002d f60000       [3]     LDAB  inBuf
+  0030 b710         [1]     TFR   B,A
+  0032 c7           [1]     CLRB  
+  0033 3b           [2]     PSHD  
+  0034 f60000       [3]     LDAB  inBuf:1
+  0037 87           [1]     CLRA  
+  0038 ea81         [3]     ORAB  1,SP
+  003a aab1         [3]     ORAA  2,SP+
+   66:    
+   67:  }        
+  003c 30           [3]     PULX  
+  003d 3d           [5]     RTS   
+   68:  

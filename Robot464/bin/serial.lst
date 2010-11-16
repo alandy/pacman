@@ -1,0 +1,289 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  /*    
+    2:  	rev 1.1.0914.1248.A
+    3:   
+    4:  	Serial.c
+    5:  	Implements serial port interface 
+    6:   
+    7:  	Created: September 5, 2010, 18:54 - AML
+    8:  	Modified: September 14, 2010 12:48 - AML
+    9:   
+   10:  	Created for EE 464 Project Pac-Man
+   11:   
+   12:   #EOC*/
+   13:  #include "serial.h"
+   14:  #include <mc9s12dp512.h>     /* derivative information */
+   15:  
+   16:  
+   17:  /****************Serial_Open****************
+   18:   * Open serial port specified by device file 
+   19:   * Inputs:	path - path to device file characterizing port
+   20:   *			baud - baud rate to set port to
+   21:   * Returns the file descriptor on success or -1 on error.
+   22:   */
+   23:  
+   24:  SerialPort Serial_Open(char * path, int baud, SerialOptions options) {
+*** EVALUATION ***
+
+Function: Serial_Open
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+   25:  
+   26:    SCI1_Init(baud);
+  0000 ec82         [3]     LDD   2,SP
+  0002 160000       [4]     JSR   _ILSEXT
+  0005 160000       [4]     JSR   SCI1_Init
+   27:  
+   28:  	
+   29:  	return 1;
+  0008 c601         [1]     LDAB  #1
+  000a 87           [1]     CLRA  
+   30:  }
+  000b 3d           [5]     RTS   
+   31:  
+   32:  
+   33:  
+   34:  /****************Serial_SetSpeed****************
+   35:   */
+   36:  int Serial_SetSpeed(int port, int baud) {
+*** EVALUATION ***
+
+Function: Serial_SetSpeed
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   37:    short br;
+   38:    SCI1BDH = 0;   
+  0002 790000       [3]     CLR   _SCI1BD
+   39:    br=(1500000+baud/2)/baud; // MCLK/(16*baudRate) 
+  0005 ce0002       [2]     LDX   #2
+  0008 1815         [12]    IDIVS 
+  000a b754         [1]     TFR   X,D
+  000c 160000       [4]     JSR   _ILSEXT
+  000f c3e360       [2]     ADDD  #58208
+  0012 b7c5         [1]     EXG   D,X
+  0014 c916         [1]     ADCB  #22
+  0016 8900         [1]     ADCA  #0
+  0018 3b           [2]     PSHD  
+  0019 ec82         [3]     LDD   2,SP
+  001b 34           [2]     PSHX  
+  001c 160000       [4]     JSR   _ILSEXT
+  001f 3b           [2]     PSHD  
+  0020 34           [2]     PSHX  
+  0021 ec84         [3]     LDD   4,SP
+  0023 ee86         [3]     LDX   6,SP
+  0025 160000       [4]     JSR   _LDIVS
+  0028 6c86         [2]     STD   6,SP
+   40:    SCI1BDL= (unsigned char) br; 
+  002a e687         [3]     LDAB  7,SP
+  002c 5b00         [2]     STAB  _SCI1BD:1
+   41:  	
+   42:  	return baud;
+  002e eca3         [3]     LDD   4,+SP
+   43:  	
+   44:  }
+  0030 1b84         [2]     LEAS  4,SP
+  0032 3d           [5]     RTS   
+   45:  
+   46:  
+   47:  /****************Serial_SetBlocking****************
+   48:   */
+   49:  
+   50:  void Serial_SetBlocking(SerialPort port, int bool) {
+*** EVALUATION ***
+
+Function: Serial_SetBlocking
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+   51:  
+   52:    // No meaning until FIFOs set up
+   53:    return;
+   54:  
+   55:  }
+  0000 3d           [5]     RTS   
+   56:  
+   57:  
+   58:  /****************Serial_Write****************
+   59:   * Write bytes to serial port specified by file descriptor returned
+   60:   * by previous call to Serial_Open().
+   61:   * buf[0] -> buf[bytes - 1] will be written
+   62:   * Inputs:	buf - pointer to bytes to be written
+   63:   *			bytes - number of bytes to write
+   64:   * Returns the number of bytes successfully written.
+   65:   */
+   66:  int Serial_Write(SerialPort port, unsigned char * buf, int bytes) {
+*** EVALUATION ***
+
+Function: Serial_Write
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   67:  	int i;
+   68:  
+   69:  	for (i = 0; i < bytes; i++) {
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c82         [2]     STD   2,SP
+  0006 2010         [3]     BRA   *+18 ;abs = 0018
+   70:        SCI1_OutChar(buf[i]);
+  0008 ec86         [3]     LDD   6,SP
+  000a e382         [3]     ADDD  2,SP
+  000c b745         [1]     TFR   D,X
+  000e e600         [3]     LDAB  0,X
+  0010 160000       [4]     JSR   SCI1_OutChar
+  0013 ee82         [3]     LDX   2,SP
+  0015 08           [1]     INX   
+  0016 6e82         [2]     STX   2,SP
+  0018 ec82         [3]     LDD   2,SP
+  001a ac80         [3]     CPD   0,SP
+  001c 2dea         [3/1]   BLT   *-20 ;abs = 0008
+   71:  	}
+   72:  
+   73:  	return bytes;                                                                       	                                
+  001e ec80         [3]     LDD   0,SP
+   74:  }
+  0020 1b84         [2]     LEAS  4,SP
+  0022 3d           [5]     RTS   
+   75:  
+   76:  
+   77:  /****************Serial_Readn****************
+   78:   * Read up to specified number of bytes from serial port specified by file 
+   79:   * descriptor returned by previous call to Serial_Open().
+   80:   * Inputs:	buf - pointer to preallocated buffer to store bytes
+   81:   *			bytes - number of bytes to read
+   82:   * Returns the number of bytes read.
+   83:   */
+   84:  int Serial_Readn(SerialPort port, unsigned char * buf, int bytes) {
+*** EVALUATION ***
+
+Function: Serial_Readn
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   85:  	int bytes_read = 0;
+   86:  
+   87:  	int i;
+   88:  
+   89:  		for (i = 0; i < bytes; i++) {
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c82         [2]     STD   2,SP
+  0006 2015         [3]     BRA   *+23 ;abs = 001d
+   90:  			buf[i] = SCI1_InChar();
+  0008 3b           [2]     PSHD  
+  0009 ec88         [3]     LDD   8,SP
+  000b e384         [3]     ADDD  4,SP
+  000d 3b           [2]     PSHD  
+  000e 160000       [4]     JSR   SCI1_InChar
+  0011 30           [3]     PULX  
+  0012 6b00         [2]     STAB  0,X
+   91:  			bytes_read++;
+  0014 30           [3]     PULX  
+  0015 08           [1]     INX   
+  0016 ed82         [3]     LDY   2,SP
+  0018 02           [1]     INY   
+  0019 6d82         [2]     STY   2,SP
+  001b b754         [1]     TFR   X,D
+  001d ee82         [3]     LDX   2,SP
+  001f ae80         [3]     CPX   0,SP
+  0021 2de5         [3/1]   BLT   *-25 ;abs = 0008
+   92:  		}
+   93:  	
+   94:  	return bytes_read;
+   95:  }
+  0023 1b84         [2]     LEAS  4,SP
+  0025 3d           [5]     RTS   
+   96:  
+   97:  
+   98:  /****************Serial_Read****************
+   99:   * Read all available bytes up to max definied by MAX_READ_SIZE from serial 
+  100:   * port specified by file descriptor returned by previous call to Serial_Open().
+  101:   * Inputs:	buf - pointer to preallocated buffer to store bytes
+  102:   * Returns the number of bytes read.
+  103:   */
+  104:   
+  105:   
+  106:   // WARNING: THIS FUNCTION WILL WORK BUT *****DO NOT**** CALL IT 
+  107:   // UNLESS YOU KNOW WHAT YOURE DOING
+  108:   
+  109:  int Serial_Read(SerialPort port, unsigned char * buf) {
+*** EVALUATION ***
+
+Function: Serial_Read
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  110:  	
+  111:  	return Serial_Readn(port, buf, MAX_READ_SIZE);
+  0001 ec84         [3]     LDD   4,SP
+  0003 3b           [2]     PSHD  
+  0004 ec82         [3]     LDD   2,SP
+  0006 3b           [2]     PSHD  
+  0007 c6ff         [1]     LDAB  #255
+  0009 87           [1]     CLRA  
+  000a 0700         [4]     BSR   Serial_Readn
+  000c 1b84         [2]     LEAS  4,SP
+  112:  	
+  113:  }
+  000e 30           [3]     PULX  
+  000f 3d           [5]     RTS   
+  114:  
+  115:  
+  116:  /****************Serial_ReadnX****************
+  117:   * Read exactly specified number of bytes from serial
+  118:   * port specified by file descriptor returned by previous call to Serial_Open().
+  119:   * Inputs:	buf - pointer to preallocated buffer to store bytes
+  120:   *			bytes - number of bytes to read
+  121:   * Returns the number of bytes read.
+  122:   */
+  123:  int Serial_ReadnX(SerialPort port, unsigned char * buf, int bytes) {
+*** EVALUATION ***
+
+Function: Serial_ReadnX
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\serial.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\serial.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+  124:  	int bytes_read = 0;
+  125:  	
+  126:  		int i;
+  127:  
+  128:  		for (i = 0; i < bytes; i++) {
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c82         [2]     STD   2,SP
+  0006 2015         [3]     BRA   *+23 ;abs = 001d
+  129:  			buf[i] = SCI1_InChar();
+  0008 3b           [2]     PSHD  
+  0009 ec88         [3]     LDD   8,SP
+  000b e384         [3]     ADDD  4,SP
+  000d 3b           [2]     PSHD  
+  000e 160000       [4]     JSR   SCI1_InChar
+  0011 30           [3]     PULX  
+  0012 6b00         [2]     STAB  0,X
+  130:  			bytes_read++;
+  0014 30           [3]     PULX  
+  0015 08           [1]     INX   
+  0016 ed82         [3]     LDY   2,SP
+  0018 02           [1]     INY   
+  0019 6d82         [2]     STY   2,SP
+  001b b754         [1]     TFR   X,D
+  001d ee82         [3]     LDX   2,SP
+  001f ae80         [3]     CPX   0,SP
+  0021 2de5         [3/1]   BLT   *-25 ;abs = 0008
+  131:  		}
+  132:  	
+  133:  	
+  134:  	return bytes_read;
+  135:  }
+  0023 1b84         [2]     LEAS  4,SP
+  0025 3d           [5]     RTS   
+  136:  

@@ -1,0 +1,162 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename **********Lab17TxF.C***********
+    2:  // Transmit FIFO
+    3:  
+    4:  //  This example accompanies the books
+    5:  //   "Embedded Microcomputer Systems: Real Time Interfacing", 
+    6:  //     Thomsen, copyright (c) 2006,
+    7:  //   "Introduction to Embedded Microcomputer Systems: 
+    8:  //    Motorola 6811 and 6812 Simulation", Brooks-Cole, copyright (c) 2002,
+    9:  //    Jonathan W. Valvano 3/17/07
+   10:  
+   11:  // You may use, edit, run or distribute this file 
+   12:  //    as long as the above copyright notices remain
+   13:  
+   14:  
+   15:  
+   16:  #include "Lab17OS.h"  // needs access to semaphores
+   17:  #include "Lab17TxF.h"
+   18:  // semaphore associated TxFifo
+   19:  Sema4Type TxRoomLeft;  /* Semaphore counting empty spaces in TxFifo */
+   20:  
+   21:  
+   22:  unsigned char static *TxPutPt;  // Pointer of where to put next 
+   23:  unsigned char static *TxGetPt;  // Pointer of where to get next 
+   24:                    // FIFO is empty if PutPt=GetPt 
+   25:                    // FIFO is full  if PutPt+1=GetPt 
+   26:  unsigned char static TxFifo[TXFIFOSIZE];  // statically allocated fifo 
+   27:  
+   28:  // ******** TxFifo_Init ************
+   29:  // Initialize TxFifo to be empty
+   30:  // Inputs:  none
+   31:  // Outputs: none 
+   32:  void TxFifo_Init(void) {
+*** EVALUATION ***
+
+Function: TxFifo_Init
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Txf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Txf.c.o"
+
+   33:    TxPutPt = TxGetPt = &TxFifo[0];  // Empty when TxPutPt==TxGetPt
+  0000 180300000000 [5]     MOVW  #TxFifo,TxGetPt
+  0006 fc0000       [3]     LDD   TxGetPt
+  0009 7c0000       [3]     STD   TxPutPt
+   34:    OS_InitSemaphore(&TxRoomLeft, TXFIFOSIZE-1);  
+  000c cc0000       [2]     LDD   #TxRoomLeft
+  000f 3b           [2]     PSHD  
+  0010 c603         [1]     LDAB  #3
+  0012 87           [1]     CLRA  
+  0013 160000       [4]     JSR   OS_InitSemaphore
+  0016 3a           [3]     PULD  
+   35:    // TXFIFOSIZE-1 is the Maximum storage capability 
+   36:  }
+  0017 3d           [5]     RTS   
+   37:  
+   38:  // ******** TxFifo_Put ************
+   39:  // Enter one character into the TxFifo
+   40:  // Called from the foreground, will wait if full
+   41:  // Inputs:  8-bit data
+   42:  // Outputs: none 
+   43:  void TxFifo_Put (unsigned char data) { 
+*** EVALUATION ***
+
+Function: TxFifo_Put
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Txf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Txf.c.o"
+
+  0000 37           [2]     PSHB  
+   44:    OS_Wait(&TxRoomLeft);
+  0001 cc0000       [2]     LDD   #TxRoomLeft
+  0004 160000       [4]     JSR   OS_Wait
+   45:    *TxPutPt = data;    // try to Put data into fifo 
+  0007 e680         [3]     LDAB  0,SP
+  0009 6bfb0000     [4]     STAB  [TxPutPt,PCR]
+   46:    TxPutPt++;          // place to put next 
+  000d fe0000       [3]     LDX   TxPutPt
+  0010 08           [1]     INX   
+  0011 7e0000       [3]     STX   TxPutPt
+   47:    if(TxPutPt==&TxFifo[TXFIFOSIZE]){ // need to wrap?
+  0014 8e0000       [2]     CPX   #TxFifo:4
+  0017 2606         [3/1]   BNE   *+8 ;abs = 001f
+   48:      TxPutPt = &TxFifo[0];
+  0019 180300000000 [5]     MOVW  #TxFifo,TxPutPt
+   49:    }
+   50:  }
+  001f 32           [3]     PULA  
+  0020 3d           [5]     RTS   
+   51:  
+   52:  // ******** TxFifo_Get ************
+   53:  // Remove one character from the TxFifo
+   54:  // Called from the background, so no Wait, no disable interrupt
+   55:  // Inputs:  pointer to place to save 8-bit data
+   56:  // Outputs: true if data is valid 
+   57:  //          false if TxFifo is empty at the time of the call
+   58:  short TxFifo_Get(unsigned char *datapt){
+*** EVALUATION ***
+
+Function: TxFifo_Get
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Txf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Txf.c.o"
+
+  0000 3b           [2]     PSHD  
+   59:    if(TxPutPt == TxGetPt){
+  0001 fc0000       [3]     LDD   TxPutPt
+  0004 bc0000       [3]     CPD   TxGetPt
+  0007 2603         [3/1]   BNE   *+5 ;abs = 000c
+   60:      return(0);     // Empty if TxPutPt=TxGetPt 
+  0009 c7           [1]     CLRB  
+  000a 2022         [3]     BRA   *+36 ;abs = 002e
+   61:    }
+   62:    else {
+   63:      *datapt = *TxGetPt;
+  000c e6fb0000     [6]     LDAB  [TxGetPt,PCR]
+  0010 ee80         [3]     LDX   0,SP
+  0012 6b00         [2]     STAB  0,X
+   64:      TxGetPt++;             // place to get next
+  0014 fe0000       [3]     LDX   TxGetPt
+  0017 08           [1]     INX   
+  0018 7e0000       [3]     STX   TxGetPt
+   65:      if(TxGetPt==&TxFifo[TXFIFOSIZE]){ // need to wrap? 
+  001b 8e0000       [2]     CPX   #TxFifo:4
+  001e 2606         [3/1]   BNE   *+8 ;abs = 0026
+   66:        TxGetPt = &TxFifo[0];
+  0020 180300000000 [5]     MOVW  #TxFifo,TxGetPt
+   67:      }
+   68:      OS_Signal(&TxRoomLeft); // increment if data removed
+  0026 cc0000       [2]     LDD   #TxRoomLeft
+  0029 160000       [4]     JSR   OS_Signal
+   69:      return(1); 
+  002c c601         [1]     LDAB  #1
+  002e 87           [1]     CLRA  
+   70:    }
+   71:  }
+  002f 30           [3]     PULX  
+  0030 3d           [5]     RTS   
+   72:  
+   73:  // ******** TxFifo_Status ************
+   74:  //  Check the status of the TxFifo
+   75:  //  Inputs: none
+   76:  //  Outputs: true if there is room in the TxFifo 
+   77:  //           true if a call to TxFifo_Put will return right away
+   78:  //           false if the TxFifo is full 
+   79:  //           false if a call to TxFifo_Put will spin (or block)
+   80:  short TxFifo_Status (void) { 
+*** EVALUATION ***
+
+Function: TxFifo_Status
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Txf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Txf.c.o"
+
+   81:    return (TxRoomLeft.Counter>0);
+  0000 fc0000       [3]     LDD   TxRoomLeft
+  0003 2e02         [3/1]   BGT   *+4 ;abs = 0007
+  0005 c7           [1]     CLRB  
+  0006 8f           [2]     SKIP2 
+  0007 c601         [1]     LDAB  #1
+  0009 87           [1]     CLRA  
+   82:  }
+  000a 3d           [5]     RTS   
+   83:  
+   84:  

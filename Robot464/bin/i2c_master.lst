@@ -1,0 +1,291 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  /* File - i2c_master.c
+    2:     driver providing functions to read and write data via I2C
+    3:      
+    4:     Last Modified by - Sarvesh Nagarajan
+    5:     Date modified - 01/14/2009
+    6:     Reference : Embedded Microcomputer Systems by Dr. Valvano
+    7:  */
+    8:  
+    9:  #include <mc9s12dp512.h>
+   10:  #include "i2c_master.h"
+   11:  
+   12:  // ************I2C_Init**************************
+   13:  // Run first
+   14:  // Input:  none
+   15:  // Output: none
+   16:  void I2C_Init(void){
+*** EVALUATION ***
+
+Function: I2C_Init
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\i2c_master.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\i2c_master.c.o" -WmsgSd1106
+
+   17:    IBCR = 0x80; // enable, no interrupts, slave mode (later changed to busmaster)
+  0000 cc1f80       [2]     LDD   #8064
+  0003 5b00         [2]     STAB  _IBCR
+   18:    IBFD = 0x1F; // 100KHz assuming 24 MHz bus clock
+  0005 5a00         [2]     STAA  _IBFD
+   19:    IBSR = 0x02; //clear IBIF
+  0007 c602         [1]     LDAB  #2
+  0009 5b00         [2]     STAB  _IBSR
+   20:  }
+  000b 3d           [5]     RTS   
+   21:  
+   22:  
+   23:  // ************I2C_Recv16**************************
+   24:  // Receives 16 bits from specified slave device
+   25:  // Input:  addr - slave I2C address
+   26:  //         reg  - register to access
+   27:  // Output: received data
+   28:  unsigned short I2C_Recv16(unsigned char addr, unsigned char reg){
+*** EVALUATION ***
+
+Function: I2C_Recv16
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\i2c_master.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\i2c_master.c.o" -WmsgSd1106
+
+  0000 6bae         [2]     STAB  2,-SP
+   29:    unsigned char data1, data2 = 0;
+   30:    unsigned short orig_tcnt;
+   31:  
+   32:    IBCR |=0x30;//send start sets 6812 as busmaster
+  0002 4c0030       [4]     BSET  _IBCR,#48
+   33:    IBDR = addr; //send slave address
+  0005 e684         [3]     LDAB  4,SP
+  0007 5b00         [2]     STAB  _IBDR
+   34:  
+   35:    orig_tcnt= TCNT;
+  0009 dc00         [3]     LDD   _TCNT
+   36:    //asm sei //disable interrupts
+   37:    while((IBSR&0x02)==0){ 
+  000b 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 000b
+   38:      //if(TCNT - orig_tcnt > I2C_TIMEOUT) return 65535;
+   39:    } 
+   40:  
+   41:    IBSR = 0x02;
+  000f c602         [1]     LDAB  #2
+  0011 5b00         [2]     STAB  _IBSR
+   42:    IBDR = reg;  // register to read from
+  0013 a680         [3]     LDAA  0,SP
+  0015 5a00         [2]     STAA  _IBDR
+   43:    
+   44:    orig_tcnt= TCNT;
+  0017 dc00         [3]     LDD   _TCNT
+   45:    while((IBSR&0x02)==0){ 
+  0019 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0019
+   46:      //if(TCNT - orig_tcnt > I2C_TIMEOUT) return 65535;
+   47:    }
+   48:  
+   49:    IBSR = 0x02;
+  001d c602         [1]     LDAB  #2
+  001f 5b00         [2]     STAB  _IBSR
+   50:    IBCR |=0x04;//repeated start
+  0021 4c0004       [4]     BSET  _IBCR,#4
+   51:    IBDR = addr|0x01;        // send read bit
+  0024 a684         [3]     LDAA  4,SP
+  0026 8a01         [1]     ORAA  #1
+  0028 5a00         [2]     STAA  _IBDR
+   52:  
+   53:    orig_tcnt= TCNT;
+  002a dc00         [3]     LDD   _TCNT
+   54:    while((IBSR&0x02)==0){ 
+  002c 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 002c
+   55:      //if(TCNT - orig_tcnt > I2C_TIMEOUT) return 65535;
+   56:    }
+   57:  
+   58:    IBSR = 0x02;
+  0030 c602         [1]     LDAB  #2
+  0032 5b00         [2]     STAB  _IBSR
+   59:    IBCR&=~0x18;
+  0034 4d0018       [4]     BCLR  _IBCR,#24
+   60:    data1 = IBDR; //dummy read
+  0037 9600         [3]     LDAA  _IBDR
+   61:  
+   62:    orig_tcnt= TCNT;
+  0039 dc00         [3]     LDD   _TCNT
+   63:    while((IBSR&0x02)==0){ 
+  003b 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 003b
+   64:      //if(TCNT - orig_tcnt > I2C_TIMEOUT) return 65535;
+   65:    }
+   66:  
+   67:    IBSR = 0x02;
+  003f c602         [1]     LDAB  #2
+  0041 5b00         [2]     STAB  _IBSR
+   68:    IBCR|=0x08;//TXAK = 1
+  0043 4c0008       [4]     BSET  _IBCR,#8
+   69:    data1 = IBDR;//first byte captured
+  0046 9600         [3]     LDAA  _IBDR
+  0048 6a81         [2]     STAA  1,SP
+   70:  
+   71:    orig_tcnt= TCNT;
+  004a dc00         [3]     LDD   _TCNT
+   72:    while((IBSR&0x02)==0){ 
+  004c 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 004c
+   73:      //if(TCNT - orig_tcnt > I2C_TIMEOUT) return 65535;
+   74:    } 
+   75:  
+   76:    IBSR = 0x02;
+  0050 c602         [1]     LDAB  #2
+  0052 5b00         [2]     STAB  _IBSR
+   77:    IBCR|=0x08;//TXAK = 1;
+  0054 4c0008       [4]     BSET  _IBCR,#8
+   78:    
+   79:    IBCR &=~0x38;//send stop bit
+  0057 4d0038       [4]     BCLR  _IBCR,#56
+   80:    data2 = IBDR; //capture second byte
+  005a d600         [3]     LDAB  _IBDR
+   81:  
+   82:    
+   83:    return ((data1<<8)+data2);
+  005c 37           [2]     PSHB  
+  005d e682         [3]     LDAB  2,SP
+  005f b710         [1]     TFR   B,A
+  0061 c7           [1]     CLRB  
+  0062 b745         [1]     TFR   D,X
+  0064 33           [3]     PULB  
+  0065 87           [1]     CLRA  
+  0066 1ae6         [2]     LEAX  D,X
+  0068 b754         [1]     TFR   X,D
+   84:    
+   85:    
+   86:  }  
+  006a 30           [3]     PULX  
+  006b 3d           [5]     RTS   
+   87:    
+   88:  // ************I2C_Recv8**************************
+   89:  // Receives 8 bits from specified slave device
+   90:  // Input:  addr - slave I2C address
+   91:  //         reg  - register to access
+   92:  // Output: received data  
+   93:  unsigned short I2C_Recv8(unsigned char addr, unsigned char reg){
+*** EVALUATION ***
+
+Function: I2C_Recv8
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\i2c_master.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\i2c_master.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+   94:  
+   95:    unsigned char data3;
+   96:  
+   97:    IBCR |= 0x30; //send start sets 6812 as busmaster
+  0001 4c0030       [4]     BSET  _IBCR,#48
+   98:    IBDR = addr;  //send slave address
+  0004 e683         [3]     LDAB  3,SP
+  0006 5b00         [2]     STAB  _IBDR
+   99:    while((IBSR&0x02)==0){ }
+  0008 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0008
+  100:    IBSR = 0x02;
+  000c c602         [1]     LDAB  #2
+  000e 5b00         [2]     STAB  _IBSR
+  101:    
+  102:    IBDR = reg;   // register to read from
+  0010 a680         [3]     LDAA  0,SP
+  0012 5a00         [2]     STAA  _IBDR
+  103:    while((IBSR&0x02)==0){ }
+  0014 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0014
+  104:    IBSR = 0x02;
+  0018 c602         [1]     LDAB  #2
+  001a 5b00         [2]     STAB  _IBSR
+  105:    
+  106:    IBCR |=0x04;//repeated start
+  001c 4c0004       [4]     BSET  _IBCR,#4
+  107:    
+  108:    IBDR = addr|0x01; // send read bit
+  001f a683         [3]     LDAA  3,SP
+  0021 8a01         [1]     ORAA  #1
+  0023 5a00         [2]     STAA  _IBDR
+  109:    while((IBSR&0x02)==0){ }
+  0025 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0025
+  110:    IBSR = 0x02;
+  0029 c602         [1]     LDAB  #2
+  002b 5b00         [2]     STAB  _IBSR
+  111:    
+  112:    IBCR&=~0x10;
+  002d 4d0010       [4]     BCLR  _IBCR,#16
+  113:    //IBCR|=0x08;
+  114:    
+  115:    data3 = IBDR; // dummy read
+  0030 9600         [3]     LDAA  _IBDR
+  116:    while((IBSR&0x02)==0){ }
+  0032 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0032
+  117:    IBSR = 0x02;
+  0036 c602         [1]     LDAB  #2
+  0038 5b00         [2]     STAB  _IBSR
+  118:    
+  119:    IBCR&=~0x38;// send stop bit
+  003a 4d0038       [4]     BCLR  _IBCR,#56
+  120:    
+  121:    data3 = IBDR; // get the required data
+  003d d600         [3]     LDAB  _IBDR
+  122:    
+  123:    return (short)data3;
+  003f 87           [1]     CLRA  
+  124:  }
+  0040 1b81         [2]     LEAS  1,SP
+  0042 3d           [5]     RTS   
+  125:  
+  126:  
+  127:  // ************I2C_Send8**************************
+  128:  // Sends 8 bits to specified slave device
+  129:  // Input:  addr - slave I2C address
+  130:  //         reg  - register to access
+  131:  //         data - data to be sent   
+  132:  // Output: none  
+  133:  
+  134:  void I2C_Send8(unsigned char addr, unsigned char reg, unsigned char data){
+*** EVALUATION ***
+
+Function: I2C_Send8
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\i2c_master.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\i2c_master.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  135:    
+  136:   IBCR |= 0x30; //send start sets 6812 as busmaster
+  0001 4c0030       [4]     BSET  _IBCR,#48
+  137:   
+  138:   IBDR = addr;  //send slave address
+  0004 e684         [3]     LDAB  4,SP
+  0006 5b00         [2]     STAB  _IBDR
+  139:    while((IBSR&0x02)==0){ }
+  0008 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0008
+  140:    IBSR = 0x02;
+  000c c602         [1]     LDAB  #2
+  000e 5b00         [2]     STAB  _IBSR
+  141:    
+  142:    IBDR = reg;   // register to write to
+  0010 a683         [3]     LDAA  3,SP
+  0012 5a00         [2]     STAA  _IBDR
+  143:    while((IBSR&0x02)==0){ }
+  0014 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0014
+  144:    IBSR = 0x02;
+  0018 c602         [1]     LDAB  #2
+  001a 5b00         [2]     STAB  _IBSR
+  145:    
+  146:    IBDR = data; // send byte
+  001c a680         [3]     LDAA  0,SP
+  001e 5a00         [2]     STAA  _IBDR
+  147:    while((IBSR&0x02)==0){ }
+  0020 4f0002fc     [4]     BRCLR _IBSR,#2,*+0 ;abs = 0020
+  148:    IBSR = 0x02;
+  0024 c602         [1]     LDAB  #2
+  0026 5b00         [2]     STAB  _IBSR
+  149:    
+  150:    IBCR&=~0x30; // send stop bit
+  0028 4d0030       [4]     BCLR  _IBCR,#48
+  151:    
+  152:  }
+  002b 32           [3]     PULA  
+  002c 3d           [5]     RTS   
+  153:    
+  154:   
+  155:  
+  156:  
+  157:  
+  158:    
+  159:    
+  160:    

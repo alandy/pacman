@@ -1,0 +1,626 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  #include "time.h"
+    2:  #include <mc9s12dp512.h>
+    3:  
+    4:  
+    5:  void usleep(int wait) {
+*** EVALUATION ***
+
+Function: usleep
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+    6:   int i;
+    7:   
+    8:   for(i = 0; i < wait; i++) {
+  0001 ce0000       [2]     LDX   #0
+  0004 21           [1]     SKIP1 
+  0005 08           [1]     INX   
+  0006 ae80         [3]     CPX   0,SP
+  0008 2dfb         [3/1]   BLT   *-3 ;abs = 0005
+    9:   }
+   10:    
+   11:  }
+  000a 3a           [3]     PULD  
+  000b 3d           [5]     RTS   
+   12:  
+   13:  extern int Count;
+   14:  typedef unsigned long time_t;
+   15:  
+   16:  time_t clock(void) {
+*** EVALUATION ***
+
+Function: clock
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+   17:   
+   18:   return (Count << 16) + TCNT; 
+  0000 dc00         [3]     LDD   _TCNT
+  0002 ce0000       [2]     LDX   #0
+   19:    
+   20:  }
+  0005 3d           [5]     RTS   
+   21:  
+   22:  time_t time(void * in) {
+*** EVALUATION ***
+
+Function: time
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+   23:    return TCNT;
+  0000 dc00         [3]     LDD   _TCNT
+  0002 ce0000       [2]     LDX   #0
+   24:  }
+  0005 3d           [5]     RTS   
+   25:  
+   26:  int lcd_line, lcd_col;
+   27:  int cursor_line, cursor_col;
+   28:  int headline, tailline;
+   29:  
+   30:  #define TERM_LINES 50
+   31:  #define TERM_COLS 21
+   32:  #define SCREEN_LINES 8
+   33:  
+   34:  char scrollback[TERM_LINES][TERM_COLS + 1];
+   35:  
+   36:  void term_init(void) {
+*** EVALUATION ***
+
+Function: term_init
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 1b9c         [2]     LEAS  -4,SP
+   37:    int i, j;
+   38:   
+   39:    LCD_Init();
+  0002 160000       [4]     JSR   LCD_Init
+   40:    LCD_Clear(0);
+  0005 c7           [1]     CLRB  
+  0006 87           [1]     CLRA  
+  0007 160000       [4]     JSR   LCD_Clear
+   41:    
+   42:    lcd_line = lcd_col = 1;
+  000a c601         [1]     LDAB  #1
+  000c 87           [1]     CLRA  
+  000d 7c0000       [3]     STD   lcd_col
+  0010 fe0000       [3]     LDX   lcd_col
+  0013 7e0000       [3]     STX   lcd_line
+   43:    cursor_line = cursor_col = 0;
+  0016 c7           [1]     CLRB  
+  0017 7c0000       [3]     STD   cursor_col
+  001a fe0000       [3]     LDX   cursor_col
+  001d 7e0000       [3]     STX   cursor_line
+   44:    headline = 0;
+  0020 7c0000       [3]     STD   headline
+   45:    tailline = SCREEN_LINES - 1; 
+  0023 c607         [1]     LDAB  #7
+  0025 7c0000       [3]     STD   tailline
+   46:   
+   47:    for (i=0; i < TERM_LINES; i++) 
+  0028 c7           [1]     CLRB  
+  0029 6c82         [2]     STD   2,SP
+   48:      for (j=0; j < TERM_COLS + 1; j++) 
+  002b c7           [1]     CLRB  
+  002c 87           [1]     CLRA  
+  002d 6c80         [2]     STD   0,SP
+   49:        scrollback[i][j] = 0;
+  002f c616         [1]     LDAB  #22
+  0031 87           [1]     CLRA  
+  0032 ed82         [3]     LDY   2,SP
+  0034 13           [3]     EMUL  
+  0035 e380         [3]     ADDD  0,SP
+  0037 b745         [1]     TFR   D,X
+  0039 69e20000     [3]     CLR   scrollback,X
+  003d ee80         [3]     LDX   0,SP
+  003f 08           [1]     INX   
+  0040 6e80         [2]     STX   0,SP
+  0042 8e0016       [2]     CPX   #22
+  0045 2de8         [3/1]   BLT   *-22 ;abs = 002f
+  0047 ee82         [3]     LDX   2,SP
+  0049 08           [1]     INX   
+  004a 6e82         [2]     STX   2,SP
+  004c 8e0032       [2]     CPX   #50
+  004f 2dda         [3/1]   BLT   *-36 ;abs = 002b
+   50:    
+   51:  }
+  0051 1b84         [2]     LEAS  4,SP
+  0053 3d           [5]     RTS   
+   52:  
+   53:  void print_line(char * line){
+*** EVALUATION ***
+
+Function: print_line
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+   54:    int i;
+   55:    
+   56:    for(i=0; i < TERM_COLS; i++){
+  0000 cd0000       [2]     LDY   #0
+  0003 b745         [1]     TFR   D,X
+   57:      LCD_OutChar(*(line++));
+  0005 e630         [3]     LDAB  1,X+
+  0007 b714         [1]     SEX   B,D
+  0009 35           [2]     PSHY  
+  000a 34           [2]     PSHX  
+  000b 160000       [4]     JSR   LCD_OutChar
+  000e ee82         [3]     LDX   2,SP
+  0010 08           [1]     INX   
+  0011 8e0015       [2]     CPX   #21
+  0014 b756         [1]     TFR   X,Y
+  0016 30           [3]     PULX  
+  0017 1b82         [2]     LEAS  2,SP
+  0019 2dea         [3/1]   BLT   *-20 ;abs = 0005
+   58:    }
+   59:  }
+  001b 3d           [5]     RTS   
+   60:  
+   61:  void print_lines(int screen_pos, int start_line, int num_lines) {
+*** EVALUATION ***
+
+Function: print_lines
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   62:    int i;
+   63:    
+   64:    LCD_GoTo(screen_pos, 1);
+  0002 ec88         [3]     LDD   8,SP
+  0004 3b           [2]     PSHD  
+  0005 c601         [1]     LDAB  #1
+  0007 87           [1]     CLRA  
+  0008 160000       [4]     JSR   LCD_GoTo
+  000b 3a           [3]     PULD  
+   65:    for(i=0; i <num_lines; i++) {
+  000c c7           [1]     CLRB  
+  000d 87           [1]     CLRA  
+  000e 6c82         [2]     STD   2,SP
+  0010 2014         [3]     BRA   *+22 ;abs = 0026
+   66:      print_line(scrollback[start_line + i]);
+  0012 ec86         [3]     LDD   6,SP
+  0014 e382         [3]     ADDD  2,SP
+  0016 b746         [1]     TFR   D,Y
+  0018 c616         [1]     LDAB  #22
+  001a 87           [1]     CLRA  
+  001b 13           [3]     EMUL  
+  001c c30000       [2]     ADDD  #scrollback
+  001f 0700         [4]     BSR   print_line
+  0021 ee82         [3]     LDX   2,SP
+  0023 08           [1]     INX   
+  0024 6e82         [2]     STX   2,SP
+  0026 ec82         [3]     LDD   2,SP
+  0028 ac80         [3]     CPD   0,SP
+  002a 2de6         [3/1]   BLT   *-24 ;abs = 0012
+   67:    }
+   68:    
+   69:  }
+  002c 1b84         [2]     LEAS  4,SP
+  002e 3d           [5]     RTS   
+   70:  
+   71:  void print_screen(void) {
+*** EVALUATION ***
+
+Function: print_screen
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   72:    if (headline < tailline)
+  0001 fc0000       [3]     LDD   headline
+  0004 bc0000       [3]     CPD   tailline
+  0007 2c0d         [3/1]   BGE   *+15 ;abs = 0016
+   73:      print_lines(1, headline, tailline - headline);
+  0009 ce0001       [2]     LDX   #1
+  000c 34           [2]     PSHX  
+  000d 3b           [2]     PSHD  
+  000e fc0000       [3]     LDD   tailline
+  0011 b30000       [3]     SUBD  headline
+  0014 201d         [3]     BRA   *+31 ;abs = 0033
+   74:    else {
+   75:      int num = SCREEN_LINES - tailline;
+  0016 c608         [1]     LDAB  #8
+  0018 87           [1]     CLRA  
+  0019 b30000       [3]     SUBD  tailline
+  001c 6c80         [2]     STD   0,SP
+   76:      print_lines(1, headline, num);
+  001e ce0001       [2]     LDX   #1
+  0021 34           [2]     PSHX  
+  0022 fd0000       [3]     LDY   headline
+  0025 35           [2]     PSHY  
+  0026 0700         [4]     BSR   print_lines
+   77:      print_lines(num + 1, 0, SCREEN_LINES - num );
+  0028 eea3         [3]     LDX   4,+SP
+  002a 08           [1]     INX   
+  002b 34           [2]     PSHX  
+  002c c7           [1]     CLRB  
+  002d 87           [1]     CLRA  
+  002e 3b           [2]     PSHD  
+  002f c608         [1]     LDAB  #8
+  0031 a384         [3]     SUBD  4,SP
+  0033 0700         [4]     BSR   print_lines
+  0035 1b86         [2]     LEAS  6,SP
+   78:    }
+   79:  }
+  0037 3d           [5]     RTS   
+   80:  
+   81:  void term_clear_line(int term_line) {
+*** EVALUATION ***
+
+Function: term_clear_line
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+  0002 3b           [2]     PSHD  
+   82:    int i;
+   83:    
+   84:    for (i=0; i < TERM_COLS; i++) {
+  0003 c7           [1]     CLRB  
+  0004 87           [1]     CLRA  
+  0005 6c84         [2]     STD   4,SP
+   85:      scrollback[term_line][i] = 0;
+  0007 cd0016       [2]     LDY   #22
+  000a ec82         [3]     LDD   2,SP
+  000c 13           [3]     EMUL  
+  000d 6c80         [2]     STD   0,SP
+  000f e384         [3]     ADDD  4,SP
+  0011 b745         [1]     TFR   D,X
+  0013 69e20000     [3]     CLR   scrollback,X
+  0017 ee84         [3]     LDX   4,SP
+  0019 08           [1]     INX   
+  001a 6e84         [2]     STX   4,SP
+  001c 8e0015       [2]     CPX   #21
+  001f 2de6         [3/1]   BLT   *-24 ;abs = 0007
+   86:    }
+   87:    if (term_line >= headline && term_line <= tailline) {
+  0021 fc0000       [3]     LDD   headline
+  0024 ac82         [3]     CPD   2,SP
+  0026 2e2a         [3/1]   BGT   *+44 ;abs = 0052
+  0028 fc0000       [3]     LDD   tailline
+  002b ac82         [3]     CPD   2,SP
+  002d 2d23         [3/1]   BLT   *+37 ;abs = 0052
+   88:      LCD_GoTo(term_line - headline + 1, 1);
+  002f ec82         [3]     LDD   2,SP
+  0031 b30000       [3]     SUBD  headline
+  0034 c30001       [2]     ADDD  #1
+  0037 3b           [2]     PSHD  
+  0038 c601         [1]     LDAB  #1
+  003a 87           [1]     CLRA  
+  003b 160000       [4]     JSR   LCD_GoTo
+   89:      print_line(scrollback[term_line]);
+  003e eca1         [3]     LDD   2,+SP
+  0040 c30000       [2]     ADDD  #scrollback
+  0043 160000       [4]     JSR   print_line
+   90:      if (term_line == tailline) {
+  0046 fc0000       [3]     LDD   tailline
+  0049 ac82         [3]     CPD   2,SP
+  004b 2605         [3/1]   BNE   *+7 ;abs = 0052
+   91:        cursor_col = 0;
+  004d c7           [1]     CLRB  
+  004e 87           [1]     CLRA  
+  004f 7c0000       [3]     STD   cursor_col
+   92:      }
+   93:    }
+   94:  }
+  0052 1b86         [2]     LEAS  6,SP
+  0054 3d           [5]     RTS   
+   95:  
+   96:  void term_new_line(void) {
+*** EVALUATION ***
+
+Function: term_new_line
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+   97:    int i; 
+   98:    
+   99:    cursor_line++;
+  0000 fe0000       [3]     LDX   cursor_line
+  0003 08           [1]     INX   
+  0004 7e0000       [3]     STX   cursor_line
+  100:    
+  101:    if (cursor_line > tailline) {
+  0007 be0000       [3]     CPX   tailline
+  000a 2f22         [3/1]   BLE   *+36 ;abs = 002e
+  102:      if (tailline >= headline + SCREEN_LINES) headline++; 
+  000c fe0000       [3]     LDX   headline
+  000f 1908         [2]     LEAY  8,X
+  0011 bd0000       [3]     CPY   tailline
+  0014 2e04         [3/1]   BGT   *+6 ;abs = 001a
+  0016 08           [1]     INX   
+  0017 7e0000       [3]     STX   headline
+  103:      tailline++;
+  001a fe0000       [3]     LDX   tailline
+  001d 08           [1]     INX   
+  001e 7e0000       [3]     STX   tailline
+  104:      if (headline >= TERM_LINES) headline = 0;
+  0021 fc0000       [3]     LDD   headline
+  0024 8c0032       [2]     CPD   #50
+  0027 2d05         [3/1]   BLT   *+7 ;abs = 002e
+  0029 c7           [1]     CLRB  
+  002a 87           [1]     CLRA  
+  002b 7c0000       [3]     STD   headline
+  105:    }
+  106:    if (cursor_line >= TERM_LINES) {
+  002e fc0000       [3]     LDD   cursor_line
+  0031 8c0032       [2]     CPD   #50
+  0034 2d0f         [3/1]   BLT   *+17 ;abs = 0045
+  107:      if (cursor_line == tailline) tailline = 0;
+  0036 bc0000       [3]     CPD   tailline
+  0039 2605         [3/1]   BNE   *+7 ;abs = 0040
+  003b c7           [1]     CLRB  
+  003c 87           [1]     CLRA  
+  003d 7c0000       [3]     STD   tailline
+  108:      cursor_line = 0;
+  0040 c7           [1]     CLRB  
+  0041 87           [1]     CLRA  
+  0042 7c0000       [3]     STD   cursor_line
+  109:    }
+  110:    
+  111:    term_clear_line(cursor_line);
+  0045 fc0000       [3]     LDD   cursor_line
+  0048 060000       [3]     JMP   term_clear_line
+  112:    
+  113:  }
+  114:  
+  115:  void term_clear_screen(void) {
+*** EVALUATION ***
+
+Function: term_clear_screen
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  116:    int i;
+  117:    LCD_Clear(0);
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 160000       [4]     JSR   LCD_Clear
+  118:    
+  119:    lcd_line = lcd_col = 1;
+  0005 c601         [1]     LDAB  #1
+  0007 87           [1]     CLRA  
+  0008 7c0000       [3]     STD   lcd_col
+  000b fe0000       [3]     LDX   lcd_col
+  000e 7e0000       [3]     STX   lcd_line
+  120:    
+  121:    for(i = 0; i < SCREEN_LINES; i++) {
+  0011 b705         [1]     SEX   A,X
+  122:      term_new_line();
+  0013 34           [2]     PSHX  
+  0014 0700         [4]     BSR   term_new_line
+  0016 30           [3]     PULX  
+  0017 08           [1]     INX   
+  0018 8e0008       [2]     CPX   #8
+  001b 2df6         [3/1]   BLT   *-8 ;abs = 0013
+  123:    }
+  124:  
+  125:  }
+  001d 3d           [5]     RTS   
+  126:  
+  127:  void term_clear_scrollback(void) {
+*** EVALUATION ***
+
+Function: term_clear_scrollback
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 1b9c         [2]     LEAS  -4,SP
+  128:      int i, j;
+  129:                             
+  130:      for (i=0; i < TERM_LINES; i++) 
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c82         [2]     STD   2,SP
+  131:        for (j=0; j < TERM_COLS + 1; j++) 
+  0006 c7           [1]     CLRB  
+  0007 87           [1]     CLRA  
+  0008 6c80         [2]     STD   0,SP
+  132:          scrollback[i][j] = 0;
+  000a c616         [1]     LDAB  #22
+  000c 87           [1]     CLRA  
+  000d ed82         [3]     LDY   2,SP
+  000f 13           [3]     EMUL  
+  0010 e380         [3]     ADDD  0,SP
+  0012 b745         [1]     TFR   D,X
+  0014 69e20000     [3]     CLR   scrollback,X
+  0018 ee80         [3]     LDX   0,SP
+  001a 08           [1]     INX   
+  001b 6e80         [2]     STX   0,SP
+  001d 8e0016       [2]     CPX   #22
+  0020 2de8         [3/1]   BLT   *-22 ;abs = 000a
+  0022 ee82         [3]     LDX   2,SP
+  0024 08           [1]     INX   
+  0025 6e82         [2]     STX   2,SP
+  0027 8e0032       [2]     CPX   #50
+  002a 2dda         [3/1]   BLT   *-36 ;abs = 0006
+  133:  
+  134:      headline = 0;
+  002c c7           [1]     CLRB  
+  002d 87           [1]     CLRA  
+  002e 7c0000       [3]     STD   headline
+  135:      tailline = SCREEN_LINES - 1;
+  0031 c607         [1]     LDAB  #7
+  0033 7c0000       [3]     STD   tailline
+  136:      cursor_line = cursor_col = 0;
+  0036 c7           [1]     CLRB  
+  0037 7c0000       [3]     STD   cursor_col
+  003a fe0000       [3]     LDX   cursor_col
+  003d 7e0000       [3]     STX   cursor_line
+  137:      
+  138:      LCD_Clear(0);
+  0040 160000       [4]     JSR   LCD_Clear
+  139:      lcd_line = lcd_col = 1;
+  0043 c601         [1]     LDAB  #1
+  0045 87           [1]     CLRA  
+  0046 7c0000       [3]     STD   lcd_col
+  0049 fe0000       [3]     LDX   lcd_col
+  004c 7e0000       [3]     STX   lcd_line
+  140:  }
+  004f 1b84         [2]     LEAS  4,SP
+  0051 3d           [5]     RTS   
+  141:  
+  142:  
+  143:  void cursor_math(signed int line_off, signed int col_off) {
+*** EVALUATION ***
+
+Function: cursor_math
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  144:    cursor_col += col_off;
+  0001 fc0000       [3]     LDD   cursor_col
+  0004 e380         [3]     ADDD  0,SP
+  0006 7c0000       [3]     STD   cursor_col
+  145:    if (cursor_col >= TERM_COLS) {
+  0009 8c0015       [2]     CPD   #21
+  000c 2d18         [3/1]   BLT   *+26 ;abs = 0026
+  146:      cursor_line += (cursor_col / TERM_COLS);
+  000e ce0015       [2]     LDX   #21
+  0011 1815         [12]    IDIVS 
+  0013 b754         [1]     TFR   X,D
+  0015 f30000       [3]     ADDD  cursor_line
+  0018 7c0000       [3]     STD   cursor_line
+  147:      cursor_col %= (TERM_COLS); 
+  001b fc0000       [3]     LDD   cursor_col
+  001e ce0015       [2]     LDX   #21
+  0021 1815         [12]    IDIVS 
+  0023 7c0000       [3]     STD   cursor_col
+  148:    }
+  149:    
+  150:    cursor_line += line_off;
+  0026 fc0000       [3]     LDD   cursor_line
+  0029 e384         [3]     ADDD  4,SP
+  002b 7c0000       [3]     STD   cursor_line
+  151:    
+  152:    if (cursor_line > tailline) {
+  002e bc0000       [3]     CPD   tailline
+  0031 2f2c         [3/1]   BLE   *+46 ;abs = 005f
+  153:      if (tailline >= headline + SCREEN_LINES) headline += cursor_line - tailline; 
+  0033 fe0000       [3]     LDX   headline
+  0036 1a08         [2]     LEAX  8,X
+  0038 be0000       [3]     CPX   tailline
+  003b 2e09         [3/1]   BGT   *+11 ;abs = 0046
+  003d b30000       [3]     SUBD  tailline
+  0040 f30000       [3]     ADDD  headline
+  0043 7c0000       [3]     STD   headline
+  154:      tailline += cursor_line - tailline;
+  0046 fc0000       [3]     LDD   cursor_line
+  0049 b30000       [3]     SUBD  tailline
+  004c f30000       [3]     ADDD  tailline
+  004f 7c0000       [3]     STD   tailline
+  155:      if (headline >= TERM_LINES) headline = 0;
+  0052 fc0000       [3]     LDD   headline
+  0055 8c0032       [2]     CPD   #50
+  0058 2d05         [3/1]   BLT   *+7 ;abs = 005f
+  005a c7           [1]     CLRB  
+  005b 87           [1]     CLRA  
+  005c 7c0000       [3]     STD   headline
+  156:    }
+  157:    if (cursor_line >= TERM_LINES) {
+  005f fc0000       [3]     LDD   cursor_line
+  0062 8c0032       [2]     CPD   #50
+  0065 2d0f         [3/1]   BLT   *+17 ;abs = 0076
+  158:      if (cursor_line == tailline) tailline = 0;
+  0067 bc0000       [3]     CPD   tailline
+  006a 2605         [3/1]   BNE   *+7 ;abs = 0071
+  006c c7           [1]     CLRB  
+  006d 87           [1]     CLRA  
+  006e 7c0000       [3]     STD   tailline
+  159:      cursor_line = 0;
+  0071 c7           [1]     CLRB  
+  0072 87           [1]     CLRA  
+  0073 7c0000       [3]     STD   cursor_line
+  160:    }    
+  161:    
+  162:    lcd_col = cursor_col + 1;
+  0076 fe0000       [3]     LDX   cursor_col
+  0079 08           [1]     INX   
+  007a 7e0000       [3]     STX   lcd_col
+  163:    if (headline > tailline) lcd_line = cursor_line + TERM_LINES - headline ;
+  007d fc0000       [3]     LDD   headline
+  0080 bc0000       [3]     CPD   tailline
+  0083 2f0b         [3/1]   BLE   *+13 ;abs = 0090
+  0085 fc0000       [3]     LDD   cursor_line
+  0088 c30032       [2]     ADDD  #50
+  008b b30000       [3]     SUBD  headline
+  008e 2009         [3]     BRA   *+11 ;abs = 0099
+  164:    else lcd_line = cursor_line - headline + 1;
+  0090 fc0000       [3]     LDD   cursor_line
+  0093 b30000       [3]     SUBD  headline
+  0096 c30001       [2]     ADDD  #1
+  0099 7c0000       [3]     STD   lcd_line
+  165:    
+  166:    LCD_GoTo(lcd_line, lcd_col);
+  009c 3b           [2]     PSHD  
+  009d b754         [1]     TFR   X,D
+  009f 160000       [4]     JSR   LCD_GoTo
+  00a2 1b84         [2]     LEAS  4,SP
+  167:  }
+  00a4 3d           [5]     RTS   
+  168:  
+  169:  void term_print_char(char c) {
+*** EVALUATION ***
+
+Function: term_print_char
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  170:    LCD_OutChar(c);
+  0000 b714         [1]     SEX   B,D
+  0002 160000       [4]     JSR   LCD_OutChar
+  171:    
+  172:    //Adjust cursors
+  173:    cursor_math(0,1);
+  0005 c7           [1]     CLRB  
+  0006 87           [1]     CLRA  
+  0007 3b           [2]     PSHD  
+  0008 52           [1]     INCB  
+  0009 160000       [4]     JSR   cursor_math
+  000c 3a           [3]     PULD  
+  174:    
+  175:  }
+  000d 3d           [5]     RTS   
+  176:  
+  177:  void term_print_string(char * str) {
+*** EVALUATION ***
+
+Function: term_print_string
+Source  : C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources\time.c
+Options : -BfaGapLimitBits-1 -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\prm;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\cmd;C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Documents and Settings\Aaron Landy\Desktop\Maze2\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\Aaron Landy\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\time.c.o" -WmsgSd1106
+
+  0000 6caa         [2]     STD   6,-SP
+  178:    int i;
+  179:    int len = strlen(str);
+  0002 160000       [4]     JSR   strlen
+  0005 6c84         [2]     STD   4,SP
+  180:    
+  181:    for(i=0; i < len; i++){
+  0007 c7           [1]     CLRB  
+  0008 87           [1]     CLRA  
+  0009 6c82         [2]     STD   2,SP
+  000b 200f         [3]     BRA   *+17 ;abs = 001c
+  182:      term_print_char(str[i]);
+  000d ec80         [3]     LDD   0,SP
+  000f e382         [3]     ADDD  2,SP
+  0011 b745         [1]     TFR   D,X
+  0013 e600         [3]     LDAB  0,X
+  0015 0700         [4]     BSR   term_print_char
+  0017 ee82         [3]     LDX   2,SP
+  0019 08           [1]     INX   
+  001a 6e82         [2]     STX   2,SP
+  001c ec82         [3]     LDD   2,SP
+  001e ac84         [3]     CPD   4,SP
+  0020 2deb         [3/1]   BLT   *-19 ;abs = 000d
+  183:    }
+  184:  }
+  0022 1b86         [2]     LEAS  6,SP
+  0024 3d           [5]     RTS   
+  185:  

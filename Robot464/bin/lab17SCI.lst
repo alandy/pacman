@@ -1,0 +1,316 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename **********Lab17SCI.C***********
+    2:  // Serial I/O
+    3:  
+    4:  //  This example accompanies the books
+    5:  //   "Embedded Microcomputer Systems: Real Time Interfacing", 
+    6:  //     Thomsen, copyright (c) 2006,
+    7:  //   "Introduction to Embedded Microcomputer Systems: 
+    8:  //    Motorola 6811 and 6812 Simulation", Brooks-Cole, copyright (c) 2002,
+    9:  //    Jonathan W. Valvano 3/17/07
+   10:  
+   11:  // You may use, edit, run or distribute this file 
+   12:  //    as long as the above copyright notices remain
+   13:  
+   14:  #include <mc9s12c32.h>     /* derivative information */
+   15:  #include "Lab17.h"   // global constants
+   16:  #include "debug.h"   // debug MACROs
+   17:  #include "Lab17RxF.H"
+   18:  #include "Lab17TxF.H"
+   19:  #include "Lab17SCI.H"
+   20:  #include "Lab17OS.h"  // needs access to semaphores
+   21:  #define RDRF 0x20
+   22:  #define TDRE 0x80 
+   23:  unsigned short RxLost; // number of receive characters lost
+   24:  								  
+   25:  // semaphore associated with SCI output
+   26:  Sema4Type DisplayFree;  // SCI output free
+   27:  
+   28:  // ******** SCI_Init ************
+   29:  // Initialize Serial port SCI
+   30:  // inputs:  bitTime specifics rate, baud rate = 250000/bitTime
+   31:  // outputs: none
+   32:  void SCI_Init(unsigned char bitTime){
+*** EVALUATION ***
+
+Function: SCI_Init
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+   33:    RxFifo_Init();
+  0001 160000       [4]     JSR   RxFifo_Init
+   34:    TxFifo_Init();
+  0004 160000       [4]     JSR   TxFifo_Init
+   35:    OS_InitSemaphore(&DisplayFree, 1);   // free to use 
+  0007 cc0000       [2]     LDD   #DisplayFree
+  000a 3b           [2]     PSHD  
+  000b c601         [1]     LDAB  #1
+  000d 87           [1]     CLRA  
+  000e 160000       [4]     JSR   OS_InitSemaphore
+   36:    RxLost = 0;        // no receive characters lost yet
+  0011 c7           [1]     CLRB  
+  0012 87           [1]     CLRA  
+  0013 7c0000       [3]     STD   RxLost
+   37:    SCIBDH = 0;        // 250000 BR=1 (MCLK=4MHz) clock 
+  0016 5b00         [2]     STAB  _SCIBD
+   38:    SCIBDL = bitTime;  // bitTime=MCLK/(16*BaudRate)
+  0018 e6a1         [3]     LDAB  2,+SP
+  001a 5b00         [2]     STAB  _SCIBD:1
+   39:    SCICR1 = 0;
+  001c 5a00         [2]     STAA  _SCICR1
+   40:  /* bit value meaning
+   41:      7   0    LOOPS, no looping, normal
+   42:      6   0    WOMS, normal high/low outputs
+   43:      5   0    RSRC, not appliable with LOOPS=0
+   44:      4   0    M, 1 start, 8 data, 1 stop
+   45:      3   0    WAKE, wake by idle (not applicable)
+   46:      2   0    ILT, short idle time (not applicable)
+   47:      1   0    PE, no parity
+   48:      0   0    PT, parity type (not applicable with PE=0) */ 
+   49:      SCICR2 = 0x2C; 
+  001e c62c         [1]     LDAB  #44
+  0020 5b00         [2]     STAB  _SCICR2
+   50:  /* bit value meaning
+   51:      7   0    TIE, no transmit interrupts on TDRE
+   52:      6   0    TCIE, no transmit interrupts on TC
+   53:      5   1    RIE, arm receive interrupts on RDRF
+   54:      4   0    ILIE, no interrupts on idle
+   55:      3   1    TE, enable transmitter
+   56:      2   1    RE, enable receiver
+   57:      1   0    RWU, no receiver wakeup
+   58:      0   0    SBK, no send break */ 
+   59:  asm cli      /* enable interrupts */
+  0022 10ef         [1]     CLI   
+   60:  }
+  0024 32           [3]     PULA  
+  0025 3d           [5]     RTS   
+   61:  
+   62:  // ******** SCI_Open ************
+   63:  // capture serial device for this thread to use
+   64:  // this thread will spin/block if device being used by another thread
+   65:  // inputs:  none
+   66:  // outputs: none
+   67:  void SCI_Open(void){
+*** EVALUATION ***
+
+Function: SCI_Open
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+   68:    SETBIT(PTT,2);        // for profiling
+  0000 1c000004     [4]     BSET  _PTT,#4
+   69:    OS_Wait(&DisplayFree);  // mutual exclusive access
+  0004 cc0000       [2]     LDD   #DisplayFree
+  0007 160000       [4]     JSR   OS_Wait
+   70:    CLRBIT(PTT,2);        // for profiling
+  000a 1d000004     [4]     BCLR  _PTT,#4
+   71:  }
+  000e 3d           [5]     RTS   
+   72:      
+   73:  // ******** SCI_InChar ************
+   74:  // Input one character from SCI terminal
+   75:  // will spin/block if no data ready
+   76:  // Inputs:  none    
+   77:  // Outputs: ASCII character 
+   78:  unsigned char SCI_InChar(void){ unsigned char letter;
+*** EVALUATION ***
+
+Function: SCI_InChar
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+   79:    SETBIT(PTT,5);       // for profiling
+  0001 1c000020     [4]     BSET  _PTT,#32
+   80:    RxFifo_Get(&letter);
+  0005 b774         [1]     TFR   SP,D
+  0007 160000       [4]     JSR   RxFifo_Get
+   81:    CLRBIT(PTT,5);       // for profiling
+  000a 1d000020     [4]     BCLR  _PTT,#32
+   82:    return(letter);
+  000e e680         [3]     LDAB  0,SP
+   83:  }
+  0010 32           [3]     PULA  
+  0011 3d           [5]     RTS   
+   84:  
+   85:  // ******** SCI_OutChar ************
+   86:  // Output one character to SCI terminal
+   87:  // will spin/block if TxFifo is full
+   88:  // Inputs:  ASCII character
+   89:  // Outputs: none 
+   90:  void SCI_OutChar(unsigned char data){
+*** EVALUATION ***
+
+Function: SCI_OutChar
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+   91:    SETBIT(PTT,6);       // for profiling
+  0000 1c000040     [4]     BSET  _PTT,#64
+   92:    TxFifo_Put(data);
+  0004 160000       [4]     JSR   TxFifo_Put
+   93:    SCICR2 = 0xAC;       // arm TDRE 
+  0007 c6ac         [1]     LDAB  #172
+  0009 5b00         [2]     STAB  _SCICR2
+   94:    CLRBIT(PTT,6);       // for profiling
+  000b 1d000040     [4]     BCLR  _PTT,#64
+   95:  }
+  000f 3d           [5]     RTS   
+   96:  
+   97:  //*****************SCI_OutCRLF***************
+   98:  // Output a CR,LF to go to a new line
+   99:  void SCI_OutCRLF(void){
+*** EVALUATION ***
+
+Function: SCI_OutCRLF
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  100:    SCI_OutChar(CR);
+  0000 c60d         [1]     LDAB  #13
+  0002 0700         [4]     BSR   SCI_OutChar
+  101:    SCI_OutChar(LF);
+  0004 c60a         [1]     LDAB  #10
+  0006 060000       [3]     JMP   SCI_OutChar
+  102:  }
+  103:  
+  104:  // ******** SCI_OutString ************
+  105:  // Output String (NULL termination)
+  106:  // Inputs:  call by reference    
+  107:  // Outputs: none 
+  108:  void SCI_OutString(char *pt){ 
+*** EVALUATION ***
+
+Function: SCI_OutString
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+  109:  unsigned char letter;
+  110:    while (letter = *pt++){
+  0001 b745         [1]     TFR   D,X
+  0003 2006         [3]     BRA   *+8 ;abs = 000b
+  111:      SCI_OutChar(letter);
+  0005 e680         [3]     LDAB  0,SP
+  0007 34           [2]     PSHX  
+  0008 0700         [4]     BSR   SCI_OutChar
+  000a 30           [3]     PULX  
+  000b b756         [1]     TFR   X,Y
+  000d e630         [3]     LDAB  1,X+
+  000f 6b80         [2]     STAB  0,SP
+  0011 e640         [3]     LDAB  0,Y
+  0013 26f0         [3/1]   BNE   *-14 ;abs = 0005
+  112:    }
+  113:  }
+  0015 32           [3]     PULA  
+  0016 3d           [5]     RTS   
+  114:  
+  115:  
+  116:  // ******** SCIHandler ************
+  117:  // SCI interrupts on TDRE or RDRF
+  118:  interrupt 20 void SCIHandler(void){ unsigned char letter;
+*** EVALUATION ***
+
+Function: SCIHandler
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+  119:    if(SCISR1 & RDRF) {
+  0001 4f002011     [4]     BRCLR _SCISR1,#32,*+21 ;abs = 0016
+  120:      letter = SCIDRL;          // acknowledge, clears RDRF
+  0005 d600         [3]     LDAB  _SCIDRL
+  0007 6b80         [2]     STAB  0,SP
+  121:      if(!RxFifo_Put(letter)){
+  0009 160000       [4]     JSR   RxFifo_Put
+  000c 046407       [3]     TBNE  D,*+10 ;abs = 0016
+  122:        RxLost++;  // number of characters lost
+  000f fe0000       [3]     LDX   RxLost
+  0012 08           [1]     INX   
+  0013 7e0000       [3]     STX   RxLost
+  123:      }
+  124:    }
+  125:    if((SCICR2&0x80)&&(SCISR1 & TDRE)){
+  0016 4f008016     [4]     BRCLR _SCICR2,#128,*+26 ;abs = 0030
+  001a 4f008012     [4]     BRCLR _SCISR1,#128,*+22 ;abs = 0030
+  126:      if(TxFifo_Get(&letter)){
+  001e b774         [1]     TFR   SP,D
+  0020 160000       [4]     JSR   TxFifo_Get
+  0023 044406       [3]     TBEQ  D,*+9 ;abs = 002c
+  127:        SCIDRL = letter;  // acknowledge, clears TDRE
+  0026 e680         [3]     LDAB  0,SP
+  0028 5b00         [2]     STAB  _SCIDRL
+  128:      }
+  002a 2004         [3]     BRA   *+6 ;abs = 0030
+  129:      else{
+  130:        SCICR2 = 0x2c;   // disarm TDRE
+  002c c62c         [1]     LDAB  #44
+  002e 5b00         [2]     STAB  _SCICR2
+  131:      }
+  132:    }
+  133:  }
+  0030 32           [3]     PULA  
+  0031 0b           [8]     RTI   
+  134:  
+  135:  
+  136:  //-----------------------SCI_OutUDec--------------------------------------
+  137:  // Output a 16 bit number in unsigned decimal format
+  138:  // Variable format 1 to 5 digits with no space before or after
+  139:  // This function uses recursion to convert a decimal number of 
+  140:  //   unspecified length as an ASCII string
+  141:  // Inputs:  16-bit unsigned number    
+  142:  // Outputs: none 
+  143:  void SCI_OutUDec(unsigned short number){
+*** EVALUATION ***
+
+Function: SCI_OutUDec
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  144:    if(number >= 10){
+  0001 8c000a       [2]     CPD   #10
+  0004 2514         [3/1]   BCS   *+22 ;abs = 001a
+  145:      SCI_OutUDec(number/10);
+  0006 ce000a       [2]     LDX   #10
+  0009 1810         [12]    IDIV  
+  000b b754         [1]     TFR   X,D
+  000d 0700         [4]     BSR   SCI_OutUDec
+  146:      SCI_OutUDec(number%10);
+  000f ec80         [3]     LDD   0,SP
+  0011 ce000a       [2]     LDX   #10
+  0014 1810         [12]    IDIV  
+  0016 0700         [4]     BSR   SCI_OutUDec
+  147:    }
+  0018 2007         [3]     BRA   *+9 ;abs = 0021
+  148:    else{
+  149:      SCI_OutChar(number+'0');
+  001a e681         [3]     LDAB  1,SP
+  001c cb30         [1]     ADDB  #48
+  001e 160000       [4]     JSR   SCI_OutChar
+  150:    }
+  151:  }
+  0021 3a           [3]     PULD  
+  0022 3d           [5]     RTS   
+  152:  
+  153:  // ******** SCI_Close ************
+  154:  // release serial device for other threads to use
+  155:  // inputs:  none
+  156:  // outputs: none
+  157:  void SCI_Close(){
+*** EVALUATION ***
+
+Function: SCI_Close
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17SCI.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17SCI.c.o" -WmsgSd1106
+
+  158:    OS_Signal(&DisplayFree);
+  0000 cc0000       [2]     LDD   #DisplayFree
+  0003 060000       [3]     JMP   OS_Signal
+  159:  }
+  160:  
+  161:  
+  162:  

@@ -1,0 +1,163 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename **********Lab17RxF.C***********
+    2:  // Receiver FIFO
+    3:  
+    4:  //  This example accompanies the books
+    5:  //   "Embedded Microcomputer Systems: Real Time Interfacing", 
+    6:  //     Thomsen, copyright (c) 2006,
+    7:  //   "Introduction to Embedded Microcomputer Systems: 
+    8:  //    Motorola 6811 and 6812 Simulation", Brooks-Cole, copyright (c) 2002,
+    9:  //    Jonathan W. Valvano 3/17/07
+   10:  
+   11:  // You may use, edit, run or distribute this file 
+   12:  //    as long as the above copyright notices remain
+   13:  
+   14:   
+   15:  #include "Lab17OS.h"  // needs access to semaphores
+   16:  #include "Lab17RxF.h"
+   17:  
+   18:  // semaphore associated with RxFifo
+   19:  Sema4Type RxAvailable;  // Semaphore counting data in RxFifo
+   20:  unsigned char static *RxPutPt; // Pointer of where to put next 
+   21:  unsigned char static *RxGetPt; // Pointer of where to get next
+   22:                    // FIFO is empty if RxPutPt=RxGetPt 
+   23:                    // FIFO is full  if RxPutPt+1=RxGetPt 
+   24:  unsigned char static RxFifo[RXFIFOSIZE];     //  statically allocated fifo
+   25:   
+   26:  // ******** RxFifo_Init ************
+   27:  // Initialize RxFifo to be empty
+   28:  // Inputs: none
+   29:  // Outputs: none 
+   30:  void RxFifo_Init(void){
+*** EVALUATION ***
+
+Function: RxFifo_Init
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Rxf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Rxf.c.o"
+
+   31:    RxPutPt = RxGetPt = &RxFifo[0];     // Empty when RxPutPt=RxGetPt 
+  0000 180300000000 [5]     MOVW  #RxFifo,RxGetPt
+  0006 fc0000       [3]     LDD   RxGetPt
+  0009 7c0000       [3]     STD   RxPutPt
+   32:    OS_InitSemaphore(&RxAvailable, 0);  // Initially empty 
+  000c cc0000       [2]     LDD   #RxAvailable
+  000f 3b           [2]     PSHD  
+  0010 c7           [1]     CLRB  
+  0011 87           [1]     CLRA  
+  0012 160000       [4]     JSR   OS_InitSemaphore
+  0015 3a           [3]     PULD  
+   33:  }
+  0016 3d           [5]     RTS   
+   34:  
+   35:  // ******** RxFifo_Put ************
+   36:  // Enter one character into the RxFifo
+   37:  // Called from the background, so no wait
+   38:  // Inputs:  8 bit data
+   39:  // Outputs: true if data is properly saved,
+   40:  //          false if data not saved, because it was full
+   41:  // Since this is called by interrupt handlers no sei,cli
+   42:  short RxFifo_Put(unsigned char data){
+*** EVALUATION ***
+
+Function: RxFifo_Put
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Rxf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Rxf.c.o"
+
+  0000 3b           [2]     PSHD  
+   43:  unsigned char *tempPt;
+   44:    tempPt  = RxPutPt;
+   45:    *tempPt = data;    // try to Put data into fifo 
+  0001 fe0000       [3]     LDX   RxPutPt
+  0004 6b30         [2]     STAB  1,X+
+   46:    tempPt++;          // place to Put next 
+  0006 6e80         [2]     STX   0,SP
+   47:    if (tempPt==&RxFifo[RXFIFOSIZE]){ // need to wrap?
+  0008 8e0000       [2]     CPX   #RxFifo:4
+  000b 2605         [3/1]   BNE   *+7 ;abs = 0012
+   48:      tempPt = &RxFifo[0];
+  000d cc0000       [2]     LDD   #RxFifo
+  0010 6c80         [2]     STD   0,SP
+   49:    }
+   50:    if (tempPt == RxGetPt ){
+  0012 fc0000       [3]     LDD   RxGetPt
+  0015 ac80         [3]     CPD   0,SP
+  0017 2603         [3/1]   BNE   *+5 ;abs = 001c
+   51:      return(0);    // Failed, fifo was full 
+  0019 c7           [1]     CLRB  
+  001a 200d         [3]     BRA   *+15 ;abs = 0029
+   52:    }     
+   53:    else {
+   54:      RxPutPt = tempPt;        // Success, so update pointer
+  001c ec80         [3]     LDD   0,SP
+  001e 7c0000       [3]     STD   RxPutPt
+   55:      OS_Signal(&RxAvailable); // increment only if data actually stored
+  0021 cc0000       [2]     LDD   #RxAvailable
+  0024 160000       [4]     JSR   OS_Signal
+   56:      return(1);
+  0027 c601         [1]     LDAB  #1
+  0029 87           [1]     CLRA  
+   57:    }
+   58:  }
+  002a 30           [3]     PULX  
+  002b 3d           [5]     RTS   
+   59:  
+   60:  // ******** RxFifo_Get ************
+   61:  // Remove one character from the RxFifo
+   62:  // Called in foreground, will wait if empty
+   63:  // Inputs:  pointer to place to save 8 bit data
+   64:  // Outputs: none 
+   65:  void RxFifo_Get(unsigned char *datapt){ 
+*** EVALUATION ***
+
+Function: RxFifo_Get
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Rxf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Rxf.c.o"
+
+  0000 3b           [2]     PSHD  
+   66:    OS_Wait(&RxAvailable);
+  0001 cc0000       [2]     LDD   #RxAvailable
+  0004 160000       [4]     JSR   OS_Wait
+   67:    *datapt = *RxGetPt;    // remove data
+  0007 e6fb0000     [6]     LDAB  [RxGetPt,PCR]
+  000b ee80         [3]     LDX   0,SP
+  000d 6b00         [2]     STAB  0,X
+   68:    RxGetPt++;             // place to get next
+  000f fe0000       [3]     LDX   RxGetPt
+  0012 08           [1]     INX   
+  0013 7e0000       [3]     STX   RxGetPt
+   69:    if (RxGetPt==&RxFifo[RXFIFOSIZE]){
+  0016 8e0000       [2]     CPX   #RxFifo:4
+  0019 2606         [3/1]   BNE   *+8 ;abs = 0021
+   70:      RxGetPt = &RxFifo[0];  // wrap
+  001b 180300000000 [5]     MOVW  #RxFifo,RxGetPt
+   71:    }
+   72:  }
+  0021 3a           [3]     PULD  
+  0022 3d           [5]     RTS   
+   73:  
+   74:  // ******** RxFifo_Status ************
+   75:  //  Check the status of the RxFifo
+   76:  // Inputs: none
+   77:  // Outputs: true if there is any data in the RxFifo
+   78:  //          true if a call to RxFifo_Get will return right away
+   79:  //          false if the RxFifo is empty 
+   80:  //          false if a call to RxFifo_Get will spin (or block)
+   81:  short RxFifo_Status(void){ 
+*** EVALUATION ***
+
+Function: RxFifo_Status
+Source  : C:\Documents and Settings\admin\Desktop\OC_DP512\Sources\lab17Rxf.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Documents and Settings\admin\Desktop\OC_DP512;C:\Documents and Settings\admin\Desktop\OC_DP512\bin;C:\Documents and Settings\admin\Desktop\OC_DP512\prm;C:\Documents and Settings\admin\Desktop\OC_DP512\cmd;C:\Documents and Settings\admin\Desktop\OC_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Env"TEXTPATH=C:\Documents and Settings\admin\Desktop\OC_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Documents and Settings\admin\Desktop\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\lab17Rxf.c.o"
+
+   82:    return (RxAvailable.Counter>0);
+  0000 fc0000       [3]     LDD   RxAvailable
+  0003 2e02         [3/1]   BGT   *+4 ;abs = 0007
+  0005 c7           [1]     CLRB  
+  0006 8f           [2]     SKIP2 
+  0007 c601         [1]     LDAB  #1
+  0009 87           [1]     CLRA  
+   83:  }
+  000a 3d           [5]     RTS   
+   84:  
